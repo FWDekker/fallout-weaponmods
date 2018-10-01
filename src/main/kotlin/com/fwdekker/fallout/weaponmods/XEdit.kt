@@ -1,6 +1,12 @@
 package com.fwdekker.fallout.weaponmods
 
 
+data class Component(
+    val formID: Int,
+    val editorID: String,
+    val name: String
+)
+
 data class LooseMod(
     val formID: Int,
     val editorID: String,
