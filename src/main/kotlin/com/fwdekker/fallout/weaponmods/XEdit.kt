@@ -22,19 +22,19 @@ data class CraftableObject(
     val formID: Int,
     val editorID: String,
     val createdMod: String,
-    val components: List<Component>,
-    val conditions: List<Condition>
-)
+    val components: List<CraftableObject.Component>,
+    val conditions: List<CraftableObject.Condition>
+) {
+    data class Component(
+        val component: String,
+        val count: Int
+    )
 
-data class Component(
-    val component: String,
-    val count: Int
-)
-
-data class Condition(
-    val function: String,
-    val perk: String,
-    val keyword: String,
-    val type: String,
-    val comparison: String
-)
+    data class Condition(
+        val function: String,
+        val perk: String,
+        val keyword: String,
+        val type: String,
+        val comparison: String
+    )
+}
