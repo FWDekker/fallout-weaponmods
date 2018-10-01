@@ -1,5 +1,8 @@
 unit _ExportCOBJ;
 
+uses
+    WeaponModCore;
+
 var
     outputLines: TStringList;
 
@@ -20,13 +23,24 @@ var
     conditions: IwbContainer;
     condition: IwbElement;
 begin
+    if (CompareText(Signature(e), 'COBJ') <> 0) then
+    begin
+        exit;
+    end;
+    if (CompareText(NameToSignature(GetEditValue(ElementBySignature(e, 'CNAM'))), 'OMOD') <> 0) then
+    begin
+        exit;
+    end;
+
+
+    // Init
     outputLines.Add('{');
 
 
     // General
-    outputLines.Add('  "formID": '      + IntToStr(FormID(e))                                         +  ',');
-    outputLines.Add('  "editorID": "'   + GetEditValue(ElementBySignature(e, 'EDID'))                 + '",');
-    outputLines.Add('  "createdMod": "' + NameToEditorID(GetEditValue(ElementBySignature(e, 'CNAM'))) + '",');
+    outputLines.Add('  "formID": '      + IntToStr(FormID(e))                                                           +  ',');
+    outputLines.Add('  "editorID": "'   + GetEditValue(ElementBySignature(e, 'EDID'))                                   + '",');
+    outputLines.Add('  "createdMod": "' + EscapeJsonString(NameToEditorID(GetEditValue(ElementBySignature(e, 'CNAM')))) + '",');
 
 
     // Components
@@ -80,15 +94,6 @@ begin
         CreateDir('fallout-weaponmods/');
         outputLines.SaveToFile('fallout-weaponmods/cobj.json');
     end;
-end;
-
-
-function NameToEditorID(s: string): string;
-var
-    index: integer;
-begin
-    index := pos(' ', s);
-    Result := copy(s, 1, index - 1);
 end;
 
 

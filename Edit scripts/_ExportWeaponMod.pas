@@ -1,5 +1,8 @@
 unit _ExportWeaponMod;
 
+uses
+    WeaponModCore;
+
 var
     outputLines: TStringList;
 
@@ -12,10 +15,20 @@ end;
 
 function Process(e: IInterface): integer;
 begin
+    if (CompareText(Signature(e), 'MISC') <> 0) then
+    begin
+        exit;
+    end;
+
+    if (not HasKeyword(e, 'ObjectTypeLooseMod')) then
+    begin
+        exit;
+    end;
+
     outputLines.Add('{');
     outputLines.Add('  "formID": '    + IntToStr(FormID(e))                                                  +  ',');
     outputLines.Add('  "editorID": "' + GetEditValue(ElementBySignature(e, 'EDID'))                          + '",');
-    outputLines.Add('  "name": "'     + GetEditValue(ElementBySignature(e, 'FULL'))                          + '",');
+    outputLines.Add('  "name": "'     + EscapeJsonString(GetEditValue(ElementBySignature(e, 'FULL')))        + '",');
     outputLines.Add('  "value": '     + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Value'))  +  ',');
     outputLines.Add('  "weight": '    + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Weight')) +  ',');
     outputLines.Add('},');
