@@ -5,39 +5,77 @@ import java.io.File
 import kotlin.system.exitProcess
 
 
+data class GameDatabase(
+    val looseMods: List<LooseMod>,
+    val objectModifiers: List<ObjectModifier>,
+    val craftableObjects: List<CraftableObject>,
+    val components: List<Component>
+) {
+    constructor(directory: File) : this(
+        Klaxon().parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!,
+        Klaxon().parseArray<ObjectModifier>(File(directory, "omod.json").inputStream())!!,
+        Klaxon().parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!,
+        Klaxon().parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
+    )
+}
+
+data class WeaponMod(
+    val looseMod: LooseMod,
+    val objectModifier: ObjectModifier,
+    val craftableObject: CraftableObject
+) {
+    companion object {
+        fun create(looseMod: LooseMod, database: GameDatabase): WeaponMod {
+            val objectModifier = database.objectModifiers.single { it.looseMod == looseMod.editorID }
+            val craftableObject = database.craftableObjects.single { it.createdMod == objectModifier.editorID }
+
+            return WeaponMod(looseMod, objectModifier, craftableObject)
+        }
+    }
+}
+
+
 fun main(args: Array<String>) {
-    val location = readLine() ?: exitProcess(-1)
+    print("Enter JSON location: ")
+    val databaseLocation = readLine() ?: exitProcess(-1)
+    val database = GameDatabase(File(databaseLocation))
 
-    val miscs = Klaxon().parseArray<LooseMod>(File("$location/misc.json").inputStream())
-        ?: exitProcess(-1)
-    val omods = Klaxon().parseArray<ObjectModifier>(File("$location/omod.json").inputStream())
-        ?: exitProcess(-1)
-    val cobjs = Klaxon().parseArray<CraftableObject>(File("$location/cobj.json").inputStream())
-        ?: exitProcess(-1)
-
+    print("Enter weapon mod name: ")
     val targetName = readLine() ?: exitProcess(-1)
-    val targetMiscs = miscs.asSequence().filter { it.name.toLowerCase().contains(targetName) }.toList()
-    val targetMiscEdids = targetMiscs.map { it.editorID }
 
-    println("Does this look right?")
-    println(targetMiscs.joinToString("\n") { it.name })
-    if (readLine() != "yes") exitProcess(-1)
+    launch(database, targetName)
+}
 
-    val targetOmods = omods.filter { it.looseMod in targetMiscEdids }
-    val targetOmodEdids = targetOmods.map { it.editorID }
-
-    val targetCobjs = cobjs.filter { it.createdMod in targetOmodEdids }
+private fun launch(database: GameDatabase, modName: String) {
+    val looseMods = database.looseMods.asSequence().filter { it.name.toLowerCase().contains(modName) }.toList()
+    val weaponMods = looseMods.map { WeaponMod.create(it, database) }
 
     println("""
-        The '''$targetName''' is a [[Fallout 4 weapon mods|weapon mod]] for the ... in ''[[Fallout 4]]''.
+        {{Infobox item
+        |games        =FO4
+        |type         =mod
+        |icon         =<!-- Variable? -->
+        |image        =Fo4 item Mod type <!-- Variable -->.png
+        |effects      =<!-- Variable -->
+        |modifies     =<!-- Variable -->
+        |value        =<!-- Variable -->
+        |weight       =<!-- Variable -->
+        |baseid       =<!-- Variable -->
+        }}{{Games|FO4}}
 
-         ==Effects==
-         ?
+        The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in ''[[Fallout 4]]'' <!-- Variable -->.
 
-         ==Production==
-         ?
+        ==Effects==
+        <!-- Variable -->
 
-         ==Locations==
-         The $targetName can be crafted at any [[weapons workbench]].
+        ==Production==
+        <!-- Variable -->
+
+        ==Locations==
+        The $modName can be crafted at any [[weapons workbench]].
+
+        {{Navbox weapon mods FO4}}
+
+        [[Category:Fallout 4 weapon mods]]<!-- Variable -->
     """.trimIndent())
 }
