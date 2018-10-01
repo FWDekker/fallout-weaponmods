@@ -20,7 +20,7 @@ begin
         exit;
     end;
 
-    if (not HasKeyword(e, 'ObjectTypeLooseMod')) then
+    if (not ListContains(ElementBySignature(e, 'KWDA'), 'ObjectTypeLooseMod')) then
     begin
         exit;
     end;

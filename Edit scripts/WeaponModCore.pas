@@ -17,17 +17,15 @@ begin
 	Result := copy(s, i + 1, 4);
 end;
 
-function HasKeyword(e: IInterface; k: string): boolean;
+function ListContains(c: IwbContainer; k: string): boolean;
 var
 	i: integer;
-	keywords: IwbElement;
 begin
 	Result := false;
 
-	keywords := ElementBySignature(e, 'KWDA');
-	for i := 0 to ElementCount(keywords) - 1 do
+	for i := 0 to ElementCount(c) - 1 do
 	begin
-		if (CompareText(NameToEditorID(GetEditValue(ElementByIndex(keywords, i))), k) = 0) then
+		if (CompareText(NameToEditorID(GetEditValue(ElementByIndex(c, i))), k) = 0) then
 		begin
 			Result := true;
 		end;

@@ -20,6 +20,11 @@ begin
         exit;
     end;
 
+    if (ListContains(ElementBySignature(e, 'MNAM'), 'ma_TEMPLATE')) then
+    begin
+        exit;
+    end;
+
     outputLines.Add('{');
     outputLines.Add('  "formID": '       + IntToStr(FormID(e))                                                                              +  ',');
     outputLines.Add('  "editorID": "'    + GetEditValue(ElementBySignature(e, 'EDID'))                                                      + '",');

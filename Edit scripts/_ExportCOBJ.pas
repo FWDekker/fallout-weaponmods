@@ -27,6 +27,7 @@ begin
     begin
         exit;
     end;
+
     if (CompareText(NameToSignature(GetEditValue(ElementBySignature(e, 'CNAM'))), 'OMOD') <> 0) then
     begin
         exit;
