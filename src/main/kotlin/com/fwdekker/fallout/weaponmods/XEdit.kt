@@ -2,20 +2,24 @@ package com.fwdekker.fallout.weaponmods
 
 
 data class Component(
+    val file: String,
     val formID: Int,
     val editorID: String,
     val name: String
 )
 
 data class LooseMod(
+    val file: String,
     val formID: Int,
     val editorID: String,
     val name: String,
     val value: Int,
-    val weight: Double
+    val weight: Double,
+    val model: String
 )
 
 data class ObjectModifier(
+    val file: String,
     val formID: Int,
     val editorID: String,
     val name: String,
@@ -25,6 +29,7 @@ data class ObjectModifier(
 )
 
 data class CraftableObject(
+    val file: String,
     val formID: Int,
     val editorID: String,
     val createdMod: String,
