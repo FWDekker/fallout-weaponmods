@@ -39,6 +39,7 @@ begin
 
 
     // General
+    outputLines.Add('  "file": "'       + GetFileName(GetFile(e))                                                       + '",');
     outputLines.Add('  "formID": '      + IntToStr(FormID(e))                                                           +  ',');
     outputLines.Add('  "editorID": "'   + GetEditValue(ElementBySignature(e, 'EDID'))                                   + '",');
     outputLines.Add('  "createdMod": "' + EscapeJsonString(NameToEditorID(GetEditValue(ElementBySignature(e, 'CNAM')))) + '",');
