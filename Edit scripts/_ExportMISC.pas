@@ -1,4 +1,4 @@
-unit _ExportWeaponMod;
+unit _ExportMISC;
 
 uses
     WeaponModCore;
