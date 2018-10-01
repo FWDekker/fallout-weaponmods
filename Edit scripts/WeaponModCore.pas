@@ -37,6 +37,7 @@ end;
 function EscapeJsonString(s: string): string;
 begin
     Result := s;
+    Result := StringReplace(Result, '\', '\\', (rfReplaceAll));
     Result := StringReplace(Result, '"', '\"', (rfReplaceAll));
     Result := StringReplace(Result, #13 + #10, '\n', (rfReplaceAll));
     Result := StringReplace(Result, #10, '\n', (rfReplaceAll));

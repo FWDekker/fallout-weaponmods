@@ -26,11 +26,12 @@ begin
     end;
 
     outputLines.Add('{');
-    outputLines.Add('  "formID": '    + IntToStr(FormID(e))                                                  +  ',');
-    outputLines.Add('  "editorID": "' + GetEditValue(ElementBySignature(e, 'EDID'))                          + '",');
-    outputLines.Add('  "name": "'     + EscapeJsonString(GetEditValue(ElementBySignature(e, 'FULL')))        + '",');
-    outputLines.Add('  "value": '     + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Value'))  +  ',');
-    outputLines.Add('  "weight": '    + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Weight')) +  ',');
+    outputLines.Add('  "formID": '    + IntToStr(FormID(e))                                                                   +  ',');
+    outputLines.Add('  "editorID": "' + GetEditValue(ElementBySignature(e, 'EDID'))                                           + '",');
+    outputLines.Add('  "name": "'     + EscapeJsonString(GetEditValue(ElementBySignature(e, 'FULL')))                         + '",');
+    outputLines.Add('  "model": "'    + EscapeJsonString(GetEditValue(ElementBySignature(ElementByPath(e, 'Model'), 'MODL'))) + '",');
+    outputLines.Add('  "value": '     + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Value'))                   +  ',');
+    outputLines.Add('  "weight": '    + GetEditValue(ElementByName(ElementBySignature(e, 'DATA'), 'Weight'))                  +  ',');
     outputLines.Add('},');
 end;
 
