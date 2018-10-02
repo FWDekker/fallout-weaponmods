@@ -73,62 +73,6 @@ data class WeaponMod(
     }
 }
 
-data class ESM(
-    val fileName: String,
-    val name: String,
-    val link: String,
-    val abbreviation: String,
-    val modCategory: String? = null
-) {
-    fun getWikiLink() =
-        if (name.capitalize() == link) "''[[$name]]''"
-        else "''[[$link|$name]]''"
-
-
-    companion object {
-        // TODO move JSON to suitable location (same for Weapons)
-        // TODO handle errors (same for Weapons)
-        private val esms = Klaxon().parseArray<ESM>(File("esms.json").inputStream())!!
-            .map { Pair(it.fileName.toLowerCase(), it) }
-            .toMap()
-
-        fun get(fileName: String) = esms[fileName.toLowerCase()]
-    }
-}
-
-data class Weapon(
-    val file: String,
-    val keyword: String,
-    val name: String,
-    val page: String
-) {
-    fun getWikiLink() =
-        if (name.capitalize() == page) "[[${name.capitalize()}]]"
-        else "[[$page|${name.capitalize()}]]"
-
-
-    companion object {
-        private val weapons = Klaxon().parseArray<Weapon>(File("weapons.json").inputStream())!!
-            .map { Pair(it.keyword.toLowerCase(), it) }
-            .toMap()
-
-        fun get(keyword: String) = weapons[keyword.toLowerCase()]
-    }
-}
-
-data class Model(
-    val model: String,
-    val image: String
-) {
-    companion object {
-        private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
-            .map { Pair(it.model.toLowerCase(), it) }
-            .toMap()
-
-        fun get(model: String) = models[model.toLowerCase()]
-    }
-}
-
 fun namedAggregation(weaponMods: List<WeaponMod>, property: (WeaponMod) -> String) =
     if (weaponMods.map(property).distinct().size == 1)
         property(weaponMods[0]) // TODO check if empty
