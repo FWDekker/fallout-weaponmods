@@ -36,7 +36,7 @@ data class WeaponMod(
         database: GameDatabase
     ) :
         this(
-            esm = ESM.valueOf(looseMod.file.takeWhile { it != '.' }),
+            esm = ESM.getESM(looseMod.file),
             formIDTemplate = looseMod.formID.toString(16).let {
                 if (it.length > 6) "{{DLC ID|${it.take(6)}}}"
                 else "{{ID|$it}}"
@@ -72,23 +72,25 @@ data class WeaponMod(
     }
 }
 
-enum class ESM(
-    val title: String,
-    val pageName: String?,
+data class ESM(
+    val fileName: String,
+    val name: String,
+    val link: String,
     val abbreviation: String,
-    val categories: Boolean
+    val modCategory: String? = null
 ) {
-    Fallout4("Fallout 4", null, "FO4", true),
-    DLCCoast("Far Harbor", "Far Harbor (add-on)", "FO4FH", false),
-    DLCNukaWorld("Nuka-World", "Nuka-World (add-on)", "FO4NW", true),
-    DLCRobot("Automatron", "Automatron (add-on)", "FO4AUT", true),
-    DLCWorkshop01("Wasteland Workshop", null, "FO4WW", false),
-    DLCWorkshop02("Contraptions Workshop", null, "FO4CW", false),
-    DLCWorkshop03("Vault-Tec Workshop", null, "FO4VW", false);
-
     fun getWikiLink() =
-        if (pageName == null) "''[[$title]]''"
-        else "''[[$pageName|$title]]''"
+        if (name == link) "''[[$name]]''"
+        else "''[[$link|$name]]''"
+
+
+    companion object {
+        private const val jsonPath = "esms.json"
+
+        fun getESM(fileName: String) =
+            Klaxon().parseArray<ESM>(File(jsonPath).inputStream())
+                ?.single { it.fileName.toLowerCase() == fileName.toLowerCase() }
+    }
 }
 
 enum class Weapon(
@@ -204,20 +206,20 @@ private fun launch(database: GameDatabase, modName: String) {
 
     val image =
         weaponMods.groupingBy { it.image }.eachCount().entries.maxBy { it.value }?.key ?: "" // TODO log empty image
-    val games = weaponMods.asSequence().mapNotNull { it.esm }.distinct().toList().sortedBy { it.title }
+    val games = weaponMods.asSequence().mapNotNull { it.esm }.distinct().toList().sortedBy { it.name }
     val appearanceString =
-        if (games.size == 1 && games[0] == ESM.Fallout4)
+        if (games.size == 1 && games[0] == ESM.getESM("Fallout4.esm"))
             games[0].getWikiLink()
-        else if (games.size == 2 && games.contains(ESM.Fallout4))
-            "${ESM.Fallout4.getWikiLink()} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
-                .filterNot { it == ESM.Fallout4 }
+        else if (games.size == 2 && games.contains(ESM.getESM("Fallout4.esm")))
+            "${ESM.getESM("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
+                .filterNot { it == ESM.getESM("Fallout4.esm") }
                 .first()
                 .getWikiLink()
             }"
         else
-            "${ESM.Fallout4.getWikiLink()} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
+            "${ESM.getESM("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
                 .asSequence()
-                .filterNot { it == ESM.Fallout4 }
+                .filterNot { it == ESM.getESM("Fallout4.esm") }
                 .map { it.getWikiLink() }
                 .joinToString(", ")
             } and ${games.last().getWikiLink()}"
@@ -299,7 +301,7 @@ The $modName can be crafted at any [[weapons workbench]].
 {{Navbox weapon mods FO4}}
 
 ${games.asSequence()
-        .filter { it.categories }
-        .joinToString("\n") { "[[Category:${it.title} weapon mods]]" }}
+        .mapNotNull { it.modCategory }
+        .joinToString("\n") { "[[Category:$it]]" }}
     """.trimIndent())
 }
