@@ -175,10 +175,11 @@ fun main(args: Array<String>) {
     val databaseLocation = readLine() ?: exitProcess(-1)
     val database = GameDatabase(File(databaseLocation))
 
-    print("Enter weapon mod name: ")
-    val targetName = readLine() ?: exitProcess(-1)
-
-    launch(database, targetName)
+    while (true) {
+        print("Enter weapon mod name: ")
+        val targetName = readLine() ?: exitProcess(-1)
+        launch(database, targetName)
+    }
 }
 
 private fun launch(database: GameDatabase, modName: String) {
