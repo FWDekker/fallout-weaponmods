@@ -41,10 +41,8 @@ data class WeaponMod(
                 if (it.length > 6) "{{DLC ID|${it.take(6)}}}"
                 else "{{ID|$it}}"
             },
-            weapon = Weapon.get(objectModifier.weaponName.toLowerCase()) ?: Weapon("",
-                "",
-                "",
-                ""), // TODO handle nulls!
+            weapon = Weapon.get(objectModifier.weaponName.toLowerCase())
+                ?: Weapon("", "", "", ""), // TODO handle nulls!
             effects = objectModifier.description,
             components = craftableObject.components
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) },
@@ -144,7 +142,8 @@ fun main(args: Array<String>) {
 }
 
 private fun launch(database: GameDatabase, modName: String) {
-    val looseMods = database.looseMods.asSequence().filter { it.name.toLowerCase().contains(modName.toLowerCase()) }.toList()
+    val looseMods =
+        database.looseMods.asSequence().filter { it.name.toLowerCase().contains(modName.toLowerCase()) }.toList()
     val weaponMods = looseMods.asSequence()
         .mapNotNull { WeaponMod.create(it, database) }
         .sortedBy { it.weapon.name }
