@@ -23,12 +23,19 @@ data class WeaponMod(
     val esm: ESM?,
     val formIDTemplate: String,
     val weaponLink: Pair<String, String?>,
+    val weaponWikiLink: String,
     val effects: String,
+    val components: List<Pair<Component, Int>>, // TODO fix component capitalisation
     val value: Int,
     val weight: Double,
     val image: String
 ) {
-    constructor(looseMod: LooseMod, objectModifier: ObjectModifier, craftableObject: CraftableObject) :
+    constructor(
+        looseMod: LooseMod,
+        objectModifier: ObjectModifier,
+        craftableObject: CraftableObject,
+        database: GameDatabase
+    ) :
         this(
             esm = ESM.valueOf(looseMod.file.takeWhile { it != '.' }),
             formIDTemplate = looseMod.formID.toString(16).let {
@@ -36,7 +43,12 @@ data class WeaponMod(
                 else "{{ID|$it}}"
             },
             weaponLink = keywordToWeapon(objectModifier.weaponName),
+            weaponWikiLink =
+            if (keywordToWeapon(objectModifier.weaponName).second == null) "[[${keywordToWeapon(objectModifier.weaponName).first.capitalize()}]]"
+            else "[[${keywordToWeapon(objectModifier.weaponName).second}|${keywordToWeapon(objectModifier.weaponName).first.capitalize()}]]",
             effects = objectModifier.description,
+            components = craftableObject.components
+                .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) },
             value = looseMod.value,
             weight = looseMod.weight,
             image = modelToImage(looseMod.model)
@@ -59,7 +71,7 @@ data class WeaponMod(
                 return null
             }
 
-            return WeaponMod(looseMod, objectModifier, craftableObject)
+            return WeaponMod(looseMod, objectModifier, craftableObject, database)
         }
     }
 }
@@ -171,6 +183,29 @@ private fun launch(database: GameDatabase, modName: String) {
                 .map { it.getWikiLink() }
                 .joinToString(", ")
             } and ${games.last().getWikiLink()}"
+    val ingredients =
+        weaponMods.flatMap { mod -> mod.components.map { it.first } }
+            .asSequence()
+            .distinct()
+            .sortedBy { it.name }
+            .toList()
+    val longestWeaponLink = weaponMods.asSequence()
+        .map { it.weaponWikiLink }
+        .maxBy { it.length }!!
+        .length
+    val longestIngredientNumber = ingredients
+        .map { ing ->
+            Pair(
+                ing,
+                weaponMods
+                    .flatMap { it.components }
+                    .asSequence()
+                    .filter { it.first == ing }
+                    .maxBy { it.second }!!
+                    .second.toString().length
+            )
+        }
+        .toMap()
 
     println("""
 {{Infobox item
@@ -179,10 +214,7 @@ private fun launch(database: GameDatabase, modName: String) {
 |icon         =
 |image        =$image
 |effects      =<!-- Variable --> // TODO
-|modifies     =${weaponMods.joinToString("<br />") {
-        if (it.weaponLink.second == null) "[[${it.weaponLink.first.capitalize()}]]"
-        else "[[${it.weaponLink.second}|${it.weaponLink.first.capitalize()}]]" // TODO make this less ugly
-    }}
+|modifies     =${weaponMods.joinToString("<br />") { it.weaponWikiLink }}
 |value        =${namedAggregation(weaponMods) { it.value.toString() }}
 |weight       =${namedAggregation(weaponMods) { it.weight.toString() }}
 |baseid       =${namedAggregation(weaponMods) { it.formIDTemplate }}
@@ -194,7 +226,32 @@ The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceStrin
 <!-- Variable --> // TODO
 
 ==Production==
-<!-- Variable --> // TODO
+${
+    if (weaponMods.size == 1)
+        """
+{{Crafting table
+${weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { index, pair -> """
+|${"material$index".padEnd(9 + ingredients.size)} =${pair.first.name}
+|${"material#$index".padEnd(9 + ingredients.size)} =${pair.second}
+""".trimIndent() }}
+|${"workspace".padEnd(9 + ingredients.size)} =[[Weapons workbench]]
+|${"product1".padEnd(9 + ingredients.size)} =$modName
+|${"product#1".padEnd(9 + ingredients.size)} =1
+}}
+        """.trimIndent()
+    else
+        """
+{|class="va-table va-table-center sortable"
+!style="width:180px;"| Weapon
+${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
+${weaponMods.joinToString("") { mod ->
+            "|-\n| ${mod.weaponWikiLink.padEnd(longestWeaponLink)} ${ingredients.asSequence()
+                .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
+                .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
+        }}
+|}
+""".trimIndent()
+    }
 
 ==Locations==
 The $modName can be crafted at any [[weapons workbench]].
