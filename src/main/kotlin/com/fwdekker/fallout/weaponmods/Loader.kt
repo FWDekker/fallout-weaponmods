@@ -41,7 +41,7 @@ data class WeaponMod(
                 if (it.length > 6) "{{DLC ID|${it.take(6)}}}"
                 else "{{ID|$it}}"
             },
-            weapon = Weapon.getWeapon(objectModifier.weaponName) ?: Weapon.AlienBlaster, // TODO handle nulls!
+            weapon = Weapon.getWeapon(objectModifier.weaponName) ?: Weapon("", "", "", ""), // TODO handle nulls!
             effects = objectModifier.description,
             components = craftableObject.components
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) },
@@ -93,78 +93,23 @@ data class ESM(
     }
 }
 
-enum class Weapon(
+data class Weapon(
+    val file: String,
     val keyword: String,
-    val wikiName: String,
-    val disambigLink: Boolean
+    val name: String,
+    val page: String
 ) {
-    Pistol10mm("ma_10mm", "10mm pistol", true),
-    Pistol44("ma_44", ".44 pistol", false),
-    AlienBlaster("ma_alienblaster", "alien blaster pistol", false),
-    AssaultRifle("ma_assaultrifle", "assault rifle", true),
-    BaseballBat("ma_baseballbat", "baseball bat", true),
-    Baton("ma_baton", "baton", false),
-    BoxingGlove("ma_boxingglove", "boxing glove", true),
-    Broadsider("ma_broadsider", "Broadsider", false),
-    ChineseOfficersSword("ma_chineseofficersword", "Chinese officer sword", false),
-    CombatShotgun("ma_combatgun", "combat shotgun", true),
-    CombatRifle("ma_combatrifle", "combat rifle", false),
-    Cryolator("ma_cryolator", "Cryolator", false),
-    DeathclawGauntlet("ma_deathclawgauntlet", "deathclaw gauntlet", true),
-    Deliverer("ma_deliverer", "Deliverer", false),
-    DoubleBarrelShotgun("ma_doublebarrelshotgun", "double-barrel shotgun", true),
-    FatMan("ma_fatman", "Fat Man", true),
-    Flamer("ma_flamer", "flamer", true),
-    GammaGun("ma_gammagun", "gamma gun", false),
-    GatlingLaser("ma_gatlinglaser", "Gatling laser", true),
-    GaussRifle("ma_gaussrifle", "Gauss rifle", true),
-    InstituteLaserGun("ma_institutelasergun", "Institute laser gun", false),
-    JunkJet("ma_junkjet", "Junk Jet", false),
-    Knife("ma_knife", "combat knife", true),
-    LaserGun("ma_lasergun", "laser gun", false),
-    LaserMusket("ma_lasermusket", "laser musket", false),
-    LeadPipe("ma_leadpipe", "lead pipe", true),
-    HuntingRifle("ma_huntingrifle", "hunting rifle", true),
-    Machete("ma_machete", "machete", true),
-    Minigun("ma_minigun", "minigun", true),
-    MissileLauncher("ma_missilelauncher", "missile launcher", true),
-    PipeBoltAction("ma_pipeboltaction", "pipe bolt-action", false),
-    PipeGun("ma_pipegun", "pipe gun", false),
-    PipeRevolver("ma_piperevolver", "pipe revolver", false),
-    PipeSyringer("ma_pipesyringer", "Syringer", false),
-    PipeWrench("ma_pipewrench", "pipe wrench", true),
-    PoolCue("ma_poolcue", "pool cue", true),
-    PlasmaGun("ma_plasmagun", "plasma gun", false),
-    RailwayRifle("ma_railwayrifle", "railway rifle", true),
-    RevolutionarySword("ma_revolutionarysword", "revolutionary sword", false),
-    Ripper("ma_ripper", "ripper", true),
-    RollingPin("ma_rollingpin", "rolling pin", true),
-    Sledgehammer("ma_sledgehammer", "sledgehammer", true),
-    SubmachineGun("ma_submachinegun", "submachine gun", true),
-    SuperSledge("ma_supersledge", "super sledge", true),
-    TireIron("ma_tireiron", "tire iron", true),
-    WalkingCane("ma_walkingcane", "walking cane", false),
-    AssaultronBlade("dlc01ma_assaultronblade", "assaultron blade", false),
-    MrHandyBuzzBlade("dlc01ma_mrhandybuzzblade", "Mr. Handy buzz blade", false),
-    LightningGun("dlc01ma_lightninggun", "Tesla rifle", false),
-    HarpoonGun("dlc03_ma_harpoongun", "harpoon gun", false),
-    LeverGun("dlc03_ma_levergun", "lever-action rifle", true), // TODO link should be (Far Harbor)
-    RadiumRifle("dlc03_ma_radiumrifle", "radium rifle", false),
-    DisciplesBlade("dlc04_ma_disciplesblade", "Disciples blade", false),
-    HandmadeAssaultRifle("dlc04_ma_handmadeassaultrifle", "handmade rifle", false),
-    PaddleBall("dlc04_ma_paddleball", "paddle ball", false),
-    WesternRevolver("dlc04_ma_revolver", "western revolver", false),
-    ThirstZapper("dlc04_ma_thirstzapper", "Thirst Zapper", false);
+    fun getWikiLink() =
+        if (name == page) "[[${name.capitalize()}]]"
+        else "[[$page|${name.capitalize()}]]"
 
-
-    fun getWikiLink(uppercase: Boolean) =
-        if (disambigLink) "''[[${wikiName.capitalize()}|${if (uppercase) wikiName.capitalize() else wikiName}]]''"
-        else "''[[${if (uppercase) wikiName.capitalize() else wikiName}]]''"
 
     companion object {
-        fun getWeapon(keyword: String): Weapon? =
-            values().singleOrNull { it.keyword.toLowerCase() == keyword.toLowerCase() }
-                .also { if (it == null) println("Unrecognised weapon keyword `$keyword`") }
+        private const val jsonPath = "weapons.json"
+
+        fun getWeapon(keyword: String) =
+            Klaxon().parseArray<Weapon>(File(jsonPath).inputStream())
+                ?.single { it.keyword.toLowerCase() == keyword.toLowerCase() }
     }
 }
 
@@ -179,7 +124,7 @@ fun namedAggregation(weaponMods: List<WeaponMod>, property: (WeaponMod) -> Strin
     if (weaponMods.map(property).distinct().size == 1)
         property(weaponMods[0]) // TODO check if empty
     else
-        weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.wikiName})" }
+        weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
 
 fun main(args: Array<String>) {
     print("Enter JSON location: ")
@@ -197,7 +142,7 @@ private fun launch(database: GameDatabase, modName: String) {
     val looseMods = database.looseMods.asSequence().filter { it.name.toLowerCase().contains(modName) }.toList()
     val weaponMods = looseMods.asSequence()
         .mapNotNull { WeaponMod.create(it, database) }
-        .sortedBy { it.weapon.wikiName }
+        .sortedBy { it.weapon.name }
         .toList()
     if (weaponMods.isEmpty()) {
         println("No weapon mods found")
@@ -230,7 +175,7 @@ private fun launch(database: GameDatabase, modName: String) {
             .sortedBy { it.name }
             .toList()
     val longestWeaponLink = weaponMods.asSequence()
-        .map { it.weapon.getWikiLink(true) }
+        .map { it.weapon.getWikiLink() }
         .maxBy { it.length }!!
         .length
     val longestIngredientNumber = ingredients
@@ -254,7 +199,7 @@ private fun launch(database: GameDatabase, modName: String) {
 |icon         =
 |image        =$image
 |effects      =<!-- Variable --> // TODO
-|modifies     =${weaponMods.joinToString("<br />") { it.weapon.getWikiLink(true) }}
+|modifies     =${weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
 |value        =${namedAggregation(weaponMods) { it.value.toString() }}
 |weight       =${namedAggregation(weaponMods) { it.weight.toString() }}
 |baseid       =${namedAggregation(weaponMods) { it.formIDTemplate }}
@@ -287,7 +232,7 @@ ${weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { 
 !style="width:180px;"| Weapon
 ${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
 ${weaponMods.joinToString("") { mod ->
-            "|-\n| ${mod.weapon.getWikiLink(true).padEnd(longestWeaponLink)} ${ingredients.asSequence()
+            "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
                 .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
                 .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
         }}
