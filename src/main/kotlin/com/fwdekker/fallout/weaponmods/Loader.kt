@@ -85,7 +85,7 @@ enum class ESM(
     Fallout4("Fallout 4", null, "FO4", true),
     DLCCoast("Far Harbor", "Far Harbor (add-on)", "FO4FH", false),
     DLCNukaWorld("Nuka-World", "Nuka-World (add-on)", "FO4NW", true),
-    DLCAutomatron("Automatron", "Automatron (add-on)", "FO4AUT", true),
+    DLCRobot("Automatron", "Automatron (add-on)", "FO4AUT", true),
     DLCWorkshop01("Wasteland Workshop", null, "FO4WW", false),
     DLCWorkshop02("Contraptions Workshop", null, "FO4CW", false),
     DLCWorkshop03("Vault-Tec Workshop", null, "FO4VW", false);
@@ -99,33 +99,61 @@ fun keywordToWeapon(keyword: String): Pair<String, String?> =
     when (keyword.toLowerCase()) {
         "ma_10mm" -> Pair("10mm pistol", "10mm pistol (Fallout 4)")
         "ma_44" -> Pair(".44 pistol", null)
+        "ma_alienblaster" -> Pair("alien blaster pistol", null)
         "ma_assaultrifle" -> Pair("assault rifle", "Assault rifle (Fallout 4)")
+        "ma_baseballbat" -> Pair("baseball bat", "Baseball bat (Fallout 4)")
+        "ma_baton" -> Pair("baton", null)
+        "ma_boxingglove" -> Pair("boxing glove", "Boxing glove (Fallout 4)")
         "ma_broadsider" -> Pair("Broadsider", null)
+        "ma_chineseofficersword" -> Pair("Chinese officer sword", null)
         "ma_combatgun" -> Pair("combat shotgun", "Combat shotgun (Fallout 4)")
         "ma_combatrifle" -> Pair("combat rifle", null)
         "ma_cryolator" -> Pair("Cryolator", null)
+        "ma_deathclawgauntlet" -> Pair("deathclaw gauntlet", "Deathclaw gauntlet (Fallout 4)")
         "ma_deliverer" -> Pair("Deliverer", null)
         "ma_doublebarrelshotgun" -> Pair("double-barrel shotgun", "Double-barrel shotgun (Fallout 4)")
+        "ma_fatman" -> Pair("Fat Man", "Fat Man (Fallout 4)")
         "ma_flamer" -> Pair("flamer", "Flamer (Fallout 4)")
+        "ma_gammagun" -> Pair("gamma gun", null)
         "ma_gatlinglaser" -> Pair("Gatling laser", "Gatling laser (Fallout 4)")
         "ma_gaussrifle" -> Pair("Gauss rifle", "Gauss rifle (Fallout 4)")
         "ma_institutelasergun" -> Pair("Institute laser gun", null)
-        "ma_laser gun" -> Pair("laser gun", null)
+        "ma_junkjet" -> Pair("Junk Jet", null)
+        "ma_knife" -> Pair("combat knife", "Combat knife (Fallout 4)")
+        "ma_lasergun" -> Pair("laser gun", null)
         "ma_lasermusket" -> Pair("laser musket", null)
+        "ma_leadpipe" -> Pair("lead pipe", "Lead pipe (Fallout 4)")
         "ma_huntingrifle" -> Pair("hunting rifle", "Hunting rifle (Fallout 4)")
+        "ma_machete" -> Pair("machete", "Machete (Fallout 4)")
         "ma_minigun" -> Pair("minigun", "Minigun (Fallout 4)")
         "ma_missilelauncher" -> Pair("missile launcher", "Missile launcher (Fallout 4)")
         "ma_pipeboltaction" -> Pair("pipe bolt-action", null)
         "ma_pipegun" -> Pair("pipe gun", null)
         "ma_piperevolver" -> Pair("pipe revolver", null)
+        "ma_pipesyringer" -> Pair("Syringer", null)
+        "ma_pipewrench" -> Pair("pipe wrench", "Pipe wrench (Fallout 4)")
+        "ma_poolcue" -> Pair("pool cue", "Pool cue (Fallout 4)")
         "ma_plasmagun" -> Pair("plasma gun", null)
+        "ma_railwayrifle" -> Pair("railway rifle", "Railway rifle (Fallout 4)")
+        "ma_revolutionarysword" -> Pair("revolutionary sword", null)
+        "ma_ripper" -> Pair("ripper", "Ripper (Fallout 4)")
+        "ma_rollingpin" -> Pair("rolling pin", "Rolling pin (Fallout 4)")
+        "ma_sledgehammer" -> Pair("sledgehammer", "Sledgehammer (Fallout 4)")
         "ma_submachinegun" -> Pair("submachine gun", "Submachine gun (Fallout 4)")
         "ma_supersledge" -> Pair("super sledge", "Super sledge (Fallout 4)")
+        "ma_tireiron" -> Pair("tire iron", "Tire iron (Fallout 4)")
+        "ma_walkingcane" -> Pair("walking cane", null)
+        "dlc01ma_assaultronblade" -> Pair("assaultron blade", null)
+        "dlc01ma_mrhandybuzzblade" -> Pair("Mr. Handy buzz blade", null)
         "dlc01ma_lightninggun" -> Pair("Tesla rifle", null)
+        "dlc03_ma_harpoongun" -> Pair("harpoon gun", null)
         "dlc03_ma_levergun" -> Pair("lever-action rifle", "Lever-action rifle (Far Harbor)")
         "dlc03_ma_radiumrifle" -> Pair("radium rifle", null)
+        "dlc04_ma_disciplesblade" -> Pair("Disciples blade", null)
         "dlc04_ma_handmadeassaultrifle" -> Pair("handmade rifle", null)
+        "dlc04_ma_paddleball" -> Pair("paddle ball", null)
         "dlc04_ma_revolver" -> Pair("western revolver", null)
+        "dlc04_ma_thirstzapper" -> Pair("Thirst Zapper", null)
         else -> Pair("???", "???").also { println("Unknown keyword $keyword") }
     }
 
