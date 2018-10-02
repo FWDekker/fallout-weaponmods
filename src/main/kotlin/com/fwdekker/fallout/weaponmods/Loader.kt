@@ -73,14 +73,7 @@ data class WeaponMod(
     }
 }
 
-class WeaponSelection(private val modName: String, database: GameDatabase) {
-    val looseMods = database.looseMods
-        .filter { it.name.toLowerCase().contains(modName.toLowerCase()) }
-        .toList()
-    val weaponMods = looseMods
-        .mapNotNull { WeaponMod.create(it, database) }
-        .sortedBy { it.weapon.name }
-        .toList()
+class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
     val image = weaponMods
         .groupingBy { it.image }
         .eachCount().entries
@@ -107,13 +100,122 @@ class WeaponSelection(private val modName: String, database: GameDatabase) {
                 .map { it.getWikiLink() }
                 .joinToString(", ")
             } and ${games.last().getWikiLink()}"
-}
+    val ingredients =
+        weaponMods.flatMap { mod -> mod.components.map { it.first } }
+            .asSequence()
+            .distinct()
+            .sortedBy { it.name }
+            .toList()
 
-fun namedAggregation(weaponMods: List<WeaponMod>, property: (WeaponMod) -> String) =
-    if (weaponMods.map(property).distinct().size == 1)
-        property(weaponMods[0]) // TODO check if empty
-    else
-        weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
+    val longestWeaponLink = weaponMods.asSequence()
+        .map { it.weapon.getWikiLink() }
+        .maxBy { it.length }!!
+        .length
+    val longestIngredientNumber = ingredients
+        .map { ing ->
+            Pair(
+                ing,
+                weaponMods
+                    .flatMap { it.components }
+                    .asSequence()
+                    .filter { it.first == ing }
+                    .maxBy { it.second }!!
+                    .second.toString().length
+            )
+        }
+        .toMap()
+
+    private val infoboxString =
+        """
+{{Infobox item
+|games        =${games.joinToString(", ") { it.abbreviation }}
+|type         =mod
+|icon         =
+|image        =${image}
+|effects      =<!-- Variable --> // TODO
+|modifies     =${weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
+|value        =${namedAggregation { it.value.toString() }}
+|weight       =${namedAggregation { it.weight.toString() }}
+|baseid       =${namedAggregation { it.formIDTemplate }}
+}}{{Games|${games.joinToString("|") { it.abbreviation }}}}
+        """.trimIndent()
+    private val introString =
+        """
+The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in ${appearanceString}.
+        """.trimIndent()
+    private val effectsString =
+        """
+<!-- Variable --> // TODO
+        """.trimIndent()
+    private val productionString =
+        """
+${
+        if (weaponMods.size == 1)
+            """
+{{Crafting table
+${weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { index, pair ->
+                """
+|${"material$index".padEnd(9 + ingredients.size)} =${pair.first.name}
+|${"material#$index".padEnd(9 + ingredients.size)} =${pair.second}
+""".trimIndent()
+            }}
+|${"workspace".padEnd(9 + ingredients.size)} =[[Weapons workbench]]
+|${"product1".padEnd(9 + ingredients.size)} =$modName
+|${"product#1".padEnd(9 + ingredients.size)} =1
+}}
+        """.trimIndent()
+        else
+            """
+{|class="va-table va-table-center sortable"
+!style="width:180px;"| Weapon
+${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
+${weaponMods.joinToString("") { mod ->
+                "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
+                    .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
+                    .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
+            }}
+|}
+""".trimIndent()
+        }
+        """.trimIndent()
+    private val locationsString =
+        """
+The $modName can be crafted at any [[weapons workbench]].
+        """.trimIndent()
+    private val categoryString =
+        """
+${games.asSequence()
+            .mapNotNull { it.modCategory }
+            .joinToString("\n") { "[[Category:$it]]" }}
+    ""${'"'}.trimIndent())
+        """.trimIndent()
+
+    val wikiPageString =
+        """
+$infoboxString
+
+$introString
+
+==Effects==
+$effectsString
+
+==Production==
+$productionString
+
+==Locations==
+$locationsString
+
+{{Navbox weapon mods FO4}}
+
+$categoryString
+        """.trimIndent()
+
+    fun namedAggregation(property: (WeaponMod) -> String) =
+        if (weaponMods.map(property).distinct().size == 1)
+            property(weaponMods[0]) // TODO check if empty
+        else
+            weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
+}
 
 fun main(args: Array<String>) {
     print("Enter JSON location: ")
@@ -128,92 +230,19 @@ fun main(args: Array<String>) {
 }
 
 private fun launch(database: GameDatabase, modName: String) {
-    val selection = WeaponSelection(modName, database)
-    if (selection.weaponMods.isEmpty()) {
+    val looseMods = database.looseMods
+        .filter { it.name.toLowerCase().contains(modName.toLowerCase()) }
+        .toList()
+    val weaponMods = looseMods
+        .mapNotNull { WeaponMod.create(it, database) }
+        .sortedBy { it.weapon.name }
+        .toList()
+    if (weaponMods.isEmpty()) {
         println("No weapon mods found")
         return
     }
 
-    val games = selection.games
-    val ingredients =
-        selection.weaponMods.flatMap { mod -> mod.components.map { it.first } }
-            .asSequence()
-            .distinct()
-            .sortedBy { it.name }
-            .toList()
-    val longestWeaponLink = selection.weaponMods.asSequence()
-        .map { it.weapon.getWikiLink() }
-        .maxBy { it.length }!!
-        .length
-    val longestIngredientNumber = ingredients
-        .map { ing ->
-            Pair(
-                ing,
-                selection.weaponMods
-                    .flatMap { it.components }
-                    .asSequence()
-                    .filter { it.first == ing }
-                    .maxBy { it.second }!!
-                    .second.toString().length
-            )
-        }
-        .toMap()
+    val selection = WeaponSelection(modName, weaponMods)
 
-    println("""
-{{Infobox item
-|games        =${games.joinToString(", ") { it.abbreviation }}
-|type         =mod
-|icon         =
-|image        =${selection.image}
-|effects      =<!-- Variable --> // TODO
-|modifies     =${selection.weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
-|value        =${namedAggregation(selection.weaponMods) { it.value.toString() }}
-|weight       =${namedAggregation(selection.weaponMods) { it.weight.toString() }}
-|baseid       =${namedAggregation(selection.weaponMods) { it.formIDTemplate }}
-}}{{Games|${games.joinToString("|") { it.abbreviation }}}}
-
-The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in ${selection.appearanceString}.
-
-==Effects==
-<!-- Variable --> // TODO
-
-==Production==
-${
-    if (selection.weaponMods.size == 1)
-        """
-{{Crafting table
-${selection.weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { index, pair ->
-            """
-|${"material$index".padEnd(9 + ingredients.size)} =${pair.first.name}
-|${"material#$index".padEnd(9 + ingredients.size)} =${pair.second}
-""".trimIndent()
-        }}
-|${"workspace".padEnd(9 + ingredients.size)} =[[Weapons workbench]]
-|${"product1".padEnd(9 + ingredients.size)} =$modName
-|${"product#1".padEnd(9 + ingredients.size)} =1
-}}
-        """.trimIndent()
-    else
-        """
-{|class="va-table va-table-center sortable"
-!style="width:180px;"| Weapon
-${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
-${selection.weaponMods.joinToString("") { mod ->
-            "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
-                .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
-                .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
-        }}
-|}
-""".trimIndent()
-    }
-
-==Locations==
-The $modName can be crafted at any [[weapons workbench]].
-
-{{Navbox weapon mods FO4}}
-
-${games.asSequence()
-        .mapNotNull { it.modCategory }
-        .joinToString("\n") { "[[Category:$it]]" }}
-    """.trimIndent())
+    println(selection.wikiPageString)
 }
