@@ -73,6 +73,42 @@ data class WeaponMod(
     }
 }
 
+class WeaponSelection(private val modName: String, database: GameDatabase) {
+    val looseMods = database.looseMods
+        .filter { it.name.toLowerCase().contains(modName.toLowerCase()) }
+        .toList()
+    val weaponMods = looseMods
+        .mapNotNull { WeaponMod.create(it, database) }
+        .sortedBy { it.weapon.name }
+        .toList()
+    val image = weaponMods
+        .groupingBy { it.image }
+        .eachCount().entries
+        .maxBy { it.value }?.key
+        ?: "" // TODO log empty image
+    val games = weaponMods
+        .map { it.esm }
+        .distinct()
+        .toList()
+        .sortedBy { it.name }
+    val appearanceString =
+        if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
+            games[0].getWikiLink()
+        else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
+            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
+                .filterNot { it == ESM.get("Fallout4.esm") }
+                .first()
+                .getWikiLink()
+            }"
+        else
+            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
+                .asSequence()
+                .filterNot { it == ESM.get("Fallout4.esm") }
+                .map { it.getWikiLink() }
+                .joinToString(", ")
+            } and ${games.last().getWikiLink()}"
+}
+
 fun namedAggregation(weaponMods: List<WeaponMod>, property: (WeaponMod) -> String) =
     if (weaponMods.map(property).distinct().size == 1)
         property(weaponMods[0]) // TODO check if empty
@@ -92,43 +128,20 @@ fun main(args: Array<String>) {
 }
 
 private fun launch(database: GameDatabase, modName: String) {
-    val looseMods =
-        database.looseMods.asSequence().filter { it.name.toLowerCase().contains(modName.toLowerCase()) }.toList()
-    val weaponMods = looseMods.asSequence()
-        .mapNotNull { WeaponMod.create(it, database) }
-        .sortedBy { it.weapon.name }
-        .toList()
-    if (weaponMods.isEmpty()) {
+    val selection = WeaponSelection(modName, database)
+    if (selection.weaponMods.isEmpty()) {
         println("No weapon mods found")
-        exitProcess(-1)
+        return
     }
 
-    val image =
-        weaponMods.groupingBy { it.image }.eachCount().entries.maxBy { it.value }?.key ?: "" // TODO log empty image
-    val games = weaponMods.asSequence().mapNotNull { it.esm }.distinct().toList().sortedBy { it.name }
-    val appearanceString =
-        if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
-            games[0].getWikiLink()
-        else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
-            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
-                .filterNot { it == ESM.get("Fallout4.esm") }
-                .first()
-                .getWikiLink()
-            }"
-        else
-            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
-                .asSequence()
-                .filterNot { it == ESM.get("Fallout4.esm") }
-                .map { it.getWikiLink() }
-                .joinToString(", ")
-            } and ${games.last().getWikiLink()}"
+    val games = selection.games
     val ingredients =
-        weaponMods.flatMap { mod -> mod.components.map { it.first } }
+        selection.weaponMods.flatMap { mod -> mod.components.map { it.first } }
             .asSequence()
             .distinct()
             .sortedBy { it.name }
             .toList()
-    val longestWeaponLink = weaponMods.asSequence()
+    val longestWeaponLink = selection.weaponMods.asSequence()
         .map { it.weapon.getWikiLink() }
         .maxBy { it.length }!!
         .length
@@ -136,7 +149,7 @@ private fun launch(database: GameDatabase, modName: String) {
         .map { ing ->
             Pair(
                 ing,
-                weaponMods
+                selection.weaponMods
                     .flatMap { it.components }
                     .asSequence()
                     .filter { it.first == ing }
@@ -151,25 +164,25 @@ private fun launch(database: GameDatabase, modName: String) {
 |games        =${games.joinToString(", ") { it.abbreviation }}
 |type         =mod
 |icon         =
-|image        =$image
+|image        =${selection.image}
 |effects      =<!-- Variable --> // TODO
-|modifies     =${weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
-|value        =${namedAggregation(weaponMods) { it.value.toString() }}
-|weight       =${namedAggregation(weaponMods) { it.weight.toString() }}
-|baseid       =${namedAggregation(weaponMods) { it.formIDTemplate }}
+|modifies     =${selection.weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
+|value        =${namedAggregation(selection.weaponMods) { it.value.toString() }}
+|weight       =${namedAggregation(selection.weaponMods) { it.weight.toString() }}
+|baseid       =${namedAggregation(selection.weaponMods) { it.formIDTemplate }}
 }}{{Games|${games.joinToString("|") { it.abbreviation }}}}
 
-The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString.
+The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in ${selection.appearanceString}.
 
 ==Effects==
 <!-- Variable --> // TODO
 
 ==Production==
 ${
-    if (weaponMods.size == 1)
+    if (selection.weaponMods.size == 1)
         """
 {{Crafting table
-${weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { index, pair ->
+${selection.weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { index, pair ->
             """
 |${"material$index".padEnd(9 + ingredients.size)} =${pair.first.name}
 |${"material#$index".padEnd(9 + ingredients.size)} =${pair.second}
@@ -185,7 +198,7 @@ ${weaponMods[0].components.asSequence().sortedBy { it.first.name }.mapIndexed { 
 {|class="va-table va-table-center sortable"
 !style="width:180px;"| Weapon
 ${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
-${weaponMods.joinToString("") { mod ->
+${selection.weaponMods.joinToString("") { mod ->
             "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
                 .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
                 .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
