@@ -36,19 +36,19 @@ data class WeaponMod(
         database: GameDatabase
     ) :
         this(
-            esm = ESM.get(looseMod.file)!!, // TODO handle error
+            esm = ESM.get(looseMod.file)!!, // TODO handle errors
             formIDTemplate = looseMod.formID.toString(16).let {
                 if (it.length > 6) "{{DLC ID|${it.take(6)}}}"
                 else "{{ID|$it}}"
             },
             weapon = Weapon.get(objectModifier.weaponName.toLowerCase())
-                ?: Weapon("", "", "", ""), // TODO handle nulls!
+                ?: Weapon("", "", "", ""), // TODO handle errors
             effects = objectModifier.description,
             components = craftableObject.components
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) },
             value = looseMod.value,
             weight = looseMod.weight,
-            image = modelToImage(looseMod.model)
+            image = Model.get(looseMod.model)!!.image // TODO handle errors
         ) {
         require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
         // TODO improve message
@@ -116,12 +116,18 @@ data class Weapon(
     }
 }
 
-fun modelToImage(model: String): String =
-    when (model.toLowerCase()) {
-        "props\\modspartbox\\modbox.nif" -> "Fo4 item Mod type A.png"
-        "props\\modspartbox\\modcrate.nif" -> "Fo4 item Mod type B.png"
-        else -> "".also { println("Unrecognised mod model") }
+data class Model(
+    val model: String,
+    val image: String
+) {
+    companion object {
+        private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
+            .map { Pair(it.model.toLowerCase(), it) }
+            .toMap()
+
+        fun get(model: String) = models[model.toLowerCase()]
     }
+}
 
 fun namedAggregation(weaponMods: List<WeaponMod>, property: (WeaponMod) -> String) =
     if (weaponMods.map(property).distinct().size == 1)

@@ -1,0 +1,10 @@
+[
+  {
+    "model": "Props\\ModsPartBox\\ModBox.nif",
+    "image": "Fo4 item Mod type A.png"
+  },
+  {
+    "model": "Props\\ModsPartBox\\ModCrate.nif",
+    "image": "Fo4 item Mod type B.png"
+  }
+]
