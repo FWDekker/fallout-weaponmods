@@ -23,3 +23,17 @@ data class Weapon(
         fun get(keyword: String) = weapons[keyword.toLowerCase()]
     }
 }
+
+data class Model(
+    val model: String,
+    val image: String
+) {
+    companion object {
+        private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
+            .map { Pair(it.model.toLowerCase(), it) }
+            .toMap()
+
+        fun get(model: String) = models[model.toLowerCase()]
+    }
+}
+
