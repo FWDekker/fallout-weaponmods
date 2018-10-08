@@ -36,4 +36,3 @@ data class Model(
         fun get(model: String) = models[model.toLowerCase()]
     }
 }
-
