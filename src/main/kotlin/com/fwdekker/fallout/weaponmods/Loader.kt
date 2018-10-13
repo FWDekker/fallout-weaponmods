@@ -146,19 +146,17 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         .toMap()
 
     private fun createInfobox() =
-        """
-        {{Infobox item
-        |games        =${games.joinToString(", ") { it.abbreviation }}
-        |type         =mod
-        |icon         =
-        |image        =$image
-        |effects      =<!-- Variable --> // TODO
-        |modifies     =${weaponMods.joinToString("<br />") { it.weapon.getWikiLink() }}
-        |value        =${namedAggregation { it.value.toString() }}
-        |weight       =${namedAggregation { it.weight.toString() }}
-        |baseid       =${namedAggregation { it.formIDTemplate }}
-        }}
-        """.trimIndent()
+        Infobox("Infobox item", listOf(
+            "games" to games.joinToString(", ") { it.abbreviation },
+            "type" to "mod",
+            "icon" to "",
+            "image" to image,
+            "effects" to "<!-- Variable -->", // TODO
+            "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink() },
+            "value" to namedAggregation { it.value.toString() },
+            "weight" to namedAggregation { it.weight.toString() },
+            "baseid" to namedAggregation { it.formIDTemplate }
+        ))
 
     private fun createHeading() =
         """
