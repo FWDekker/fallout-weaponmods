@@ -1,6 +1,7 @@
 package com.fwdekker.fallout.weaponmods
 
 import com.beust.klaxon.Klaxon
+import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -11,64 +12,82 @@ data class GameDatabase(
     val craftableObjects: List<CraftableObject>,
     val components: List<Component>
 ) {
-    constructor(directory: File) : this(
-        Klaxon().parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!,
-        Klaxon().parseArray<ObjectModifier>(File(directory, "omod.json").inputStream())!!,
-        Klaxon().parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!,
-        Klaxon().parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
-    )
+    companion object : KLogging() {
+        fun fromDirectory(directory: File): GameDatabase? {
+            val looseMods = parseFile<LooseMod>(File(directory, "misc.json"))
+                ?: return null
+            val objectModifiers = parseFile<ObjectModifier>(File(directory, "omod.json"))
+                ?: return null
+            val craftableObjects = parseFile<CraftableObject>(File(directory, "cobj.json"))
+                ?: return null
+            val components = parseFile<Component>(File(directory, "cmpo.json"))
+                ?: return null
+
+            return GameDatabase(looseMods, objectModifiers, craftableObjects, components)
+        }
+
+        private inline fun <reified T> parseFile(file: File) = Klaxon().parseArray<T>(file.inputStream())
+    }
 }
+
 
 data class WeaponMod(
     val esm: ESM,
     val formIDTemplate: String,
     val weapon: Weapon,
     val effects: String,
-    val components: List<Pair<Component, Int>>, // TODO fix component capitalisation
+    val components: List<Pair<Component, Int>>,
     val value: Int,
     val weight: Double,
     val image: String
 ) {
-    constructor(
-        looseMod: LooseMod,
-        objectModifier: ObjectModifier,
-        craftableObject: CraftableObject,
-        database: GameDatabase
-    ) :
-        this(
-            esm = ESM.get(looseMod.file)!!, // TODO handle errors
-            formIDTemplate = looseMod.formID.toString(16).let {
-                if (it.length > 6) "{{DLC ID|${it.take(6)}}}"
-                else "{{ID|$it}}"
-            },
-            weapon = Weapon.get(objectModifier.weaponName.toLowerCase())
-                ?: Weapon("", "", "", ""), // TODO handle errors
-            effects = objectModifier.description,
-            components = craftableObject.components
-                .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) },
-            value = looseMod.value,
-            weight = looseMod.weight,
-            image = Model.get(looseMod.model)!!.image // TODO handle errors
-        ) {
-        require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
-        // TODO improve message
-    }
-
-    companion object {
-        fun create(looseMod: LooseMod, database: GameDatabase): WeaponMod? {
+    companion object : KLogging() {
+        fun fromLooseMod(looseMod: LooseMod, database: GameDatabase): WeaponMod? {
             val objectModifier = database.objectModifiers.singleOrNull { it.looseMod == looseMod.editorID }
             if (objectModifier == null) {
-                println("Could not create weapon mod object") // TODO use logger
+                logger.warn { "Could not create weapon mod with omod `${looseMod.editorID}`." }
                 return null
             }
 
             val craftableObject = database.craftableObjects.singleOrNull { it.createdMod == objectModifier.editorID }
             if (craftableObject == null) {
-                println("Could not create weapon mod object")
+                logger.warn { "Could not create weapon mod with cobj `${objectModifier.editorID}`." }
                 return null
             }
 
-            return WeaponMod(looseMod, objectModifier, craftableObject, database)
+            return fromObjects(looseMod, objectModifier, craftableObject, database)
+        }
+
+        private fun fromObjects(
+            looseMod: LooseMod,
+            objectModifier: ObjectModifier,
+            craftableObject: CraftableObject,
+            database: GameDatabase
+        ): WeaponMod? {
+            require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
+
+            val esm = ESM.get(looseMod.file)
+            require(esm != null) { "Could not find ESM `${looseMod.file}`." }
+
+            val model = Model.get(looseMod.model)
+            require(model != null) { "Could not find model `${looseMod.model}`." }
+
+            val formIDTemplate = formIDtoTemplate(looseMod.formID.toString(16))
+            val weapon = Weapon.get(objectModifier.weaponName.toLowerCase())
+                ?: return null
+            val components = craftableObject.components  // TODO fix component capitalisation
+                .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
+
+            return WeaponMod(
+                esm = esm!!,
+                formIDTemplate = formIDTemplate,
+                weapon = weapon,
+                effects = objectModifier.description,
+                components = components,
+                value = looseMod.value,
+                weight = looseMod.weight,
+                image = model!!.image
+            )
         }
     }
 }
@@ -225,31 +244,38 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 }
 
 fun main(args: Array<String>) {
+    val logger = KLogging().logger
+
     print("Enter JSON location: ")
-    val databaseLocation = readLine() ?: exitProcess(-1)
-    val database = GameDatabase(File(databaseLocation))
+    val databaseLocation = readLine()
+        ?: logger.error { "No location was entered." }.let { exitProcess(-1) }
+    val database = GameDatabase.fromDirectory(File(databaseLocation))
+        ?: logger.error { "Failed to read database." }.let { exitProcess(-1) }
 
     while (true) {
         print("Enter weapon mod name: ")
-        val targetName = readLine() ?: exitProcess(-1)
+        val targetName = readLine()
+            ?: logger.error { "No weapon mod was entered." }.let { exitProcess(-1) }
+
         launch(database, targetName)
     }
 }
 
 private fun launch(database: GameDatabase, modName: String) {
+    val logger = KLogging().logger
+
     val looseMods = database.looseMods
         .filter { it.name.toLowerCase().contains(modName.toLowerCase()) }
         .toList()
     val weaponMods = looseMods
-        .mapNotNull { WeaponMod.create(it, database) }
+        .mapNotNull { WeaponMod.fromLooseMod(it, database) }
         .sortedBy { it.weapon.name }
         .toList()
     if (weaponMods.isEmpty()) {
-        println("No weapon mods found")
+        logger.warn { "No weapon mods by the name `$modName` were found." }
         return
     }
 
     val selection = WeaponSelection(modName, weaponMods)
-
     println(selection.wikiPageString)
 }

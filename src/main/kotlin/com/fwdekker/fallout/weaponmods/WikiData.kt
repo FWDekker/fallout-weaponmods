@@ -4,6 +4,12 @@ import com.beust.klaxon.Klaxon
 import java.io.File
 
 
+fun formIDtoTemplate(formID: String) =
+    if (formID.dropWhile { it == '0' }.length > 6)
+        "{{DLC ID|${formID.takeLast(6)}}}"
+    else
+        "{{ID|${formID.takeLast(6)}}}"
+
 data class Weapon(
     val file: String,
     val keyword: String,
