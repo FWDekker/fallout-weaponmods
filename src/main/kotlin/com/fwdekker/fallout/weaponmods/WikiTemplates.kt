@@ -7,14 +7,6 @@ fun formIDtoTemplate(formID: String) =
     else
         "{{ID|${formID.takeLast(6)}}}"
 
-open class Link(val target: String, val text: String?) {
-    override fun toString() =
-        if (text == null)
-            "[[$target]]"
-        else
-            "[[$target|$text]]"
-}
-
 data class Infobox(
     val type: String,
     val values: List<Pair<String, String>>,
@@ -25,10 +17,6 @@ data class Infobox(
         values.map{ "|" + it.first.padEnd(keyWidth) + "=" + it.second + "\n" } +
         "}}"
 }
-
-class Category(category: String) : Link("Category:$category", null)
-
-class InterlanguageLink(language: String, page: String) : Link("$language:$page", null)
 
 open class Page {
     val notices = mutableListOf<String>()
