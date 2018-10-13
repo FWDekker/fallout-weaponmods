@@ -36,7 +36,7 @@ data class WeaponMod(
     val formIDTemplate: String,
     val weapon: Weapon,
     val effects: String,
-    val components: List<Pair<Component, Int>>,
+    val components: Map<Component, Int>,
     val value: Int,
     val weight: Double,
     val image: String
@@ -77,6 +77,7 @@ data class WeaponMod(
                 ?: return null
             val components = craftableObject.components  // TODO fix component capitalisation
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
+                .toMap()
 
             return WeaponMod(
                 esm = esm!!,
@@ -92,6 +93,14 @@ data class WeaponMod(
     }
 }
 
+data class Range(val min: Int, val max: Int) {
+    override fun toString() =
+        if (min == max)
+            min.toString()
+        else
+            "$min–$max"
+}
+
 class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
     private val image = weaponMods
         .groupingBy { it.image }
@@ -104,13 +113,13 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         .toList()
         .sortedBy { it.name }
     private val ingredients =
-        weaponMods.flatMap { mod -> mod.components.map { it.first } }
+        weaponMods.flatMap { mod -> mod.components.map { it.key } }
             .asSequence()
             .distinct()
             .sortedBy { it.name }
             .toList()
 
-    private val appearanceString =
+    private val appearanceString = // TODO clean up
         if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
             games[0].getWikiLink()
         else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
@@ -136,48 +145,45 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             Pair(
                 ing,
                 weaponMods
-                    .flatMap { it.components }
+                    .flatMap { it.components.entries }
                     .asSequence()
-                    .filter { it.first == ing }
-                    .maxBy { it.second }!!
-                    .second.toString().length
+                    .filter { it.key == ing }
+                    .maxBy { it.value }!!
+                    .value.toString().length
             )
         }
         .toMap()
 
     private fun createInfobox() =
-        Infobox("Infobox item", listOf(
-            "games" to games.joinToString(", ") { it.abbreviation },
-            "type" to "mod",
-            "icon" to "",
-            "image" to image,
-            "effects" to "<!-- Variable -->", // TODO
-            "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink() },
-            "value" to namedAggregation { it.value.toString() },
-            "weight" to namedAggregation { it.weight.toString() },
-            "baseid" to namedAggregation { it.formIDTemplate }
-        ))
+        MultilineTemplate(
+            "Infobox item",
+            listOf(
+                "games" to games.joinToString(", ") { it.abbreviation },
+                "type" to "mod",
+                "icon" to "",
+                "image" to image,
+                "effects" to "<!-- Variable -->", // TODO
+                "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink() },
+                "value" to namedAggregation { it.value.toString() },
+                "weight" to namedAggregation { it.weight.toString() },
+                "baseid" to namedAggregation { it.formIDTemplate }
+            )
+        )
 
     private fun createEffects() =
         "<!-- Variable --> // TODO"
 
     private fun singleTable() =
-        """
-        {{Crafting table
-        ${weaponMods[0].components.asSequence()
-            .sortedBy { it.first.name }
-            .mapIndexed { index, pair ->
-                """
-                |${"material$index".padEnd(9 + ingredients.size)} =${pair.first.name}
-                |${"material#$index".padEnd(9 + ingredients.size)} =${pair.second}
-                """.trimIndent()
-            }
-        }
-        |${"workspace".padEnd(9 + ingredients.size)} =[[Weapons workbench]]
-        |${"product1".padEnd(9 + ingredients.size)} =$modName
-        |${"product#1".padEnd(9 + ingredients.size)} =1
-        }}
-        """.trimIndent()
+        CraftingTable(
+            materials = ingredients.map { ingredient ->
+                val amounts = weaponMods.mapNotNull { it.components[ingredient] }
+
+                Pair(ingredient.name, Range(amounts.min()!!, amounts.max()!!)) // TODO catch !!s?
+            },
+            workspace = "[[Weapons workbench]]",
+            perks = emptyList(),
+            products = listOf(modName to Range(1, 1))
+        ).toString()
 
     private fun multiTable() =
         """
@@ -187,7 +193,10 @@ ${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
 ${weaponMods
             .joinToString("") { mod ->
                 "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
-                    .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
+                    .map { ing ->
+                        Pair(ing,
+                            mod.components.entries.singleOrNull { comp -> ing == comp.key }?.value ?: 0)
+                    }
                     .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
             }
         }
@@ -195,10 +204,7 @@ ${weaponMods
         """.trimIndent()
 
     private fun createProduction() =
-        if (weaponMods.size == 1)
-            singleTable()
-        else
-            multiTable()
+        singleTable() + "\n\n" + multiTable()
 
     fun createPage(): Page =
         Page().also { page ->
