@@ -13,8 +13,9 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "io.github.microutils:kotlin-logging:1.6.10"
+    compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8"
+    compile group: "io.github.microutils", name: "kotlin-logging", version: kloggingVersion
+    implementation group: "org.slf4j", name: "slf4j-simple", version: slf4jVersion
     implementation group: "com.beust", name: "klaxon", version: klaxonVersion
 
     testCompile group: "junit", name: "junit", version: junitVersion
