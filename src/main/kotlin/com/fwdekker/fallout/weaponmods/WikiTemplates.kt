@@ -22,7 +22,7 @@ open class Page {
     val notices = mutableListOf<String>()
     val infoboxes = mutableListOf<Infobox>()
     val games = mutableListOf<String>()
-    var intro = mutableListOf<String>()
+    val intros = mutableListOf<String>()
     val sections = mutableListOf<Pair<String, String>>()
     val navboxes = mutableListOf<String>()
     val categories = mutableListOf<Link>()
@@ -33,12 +33,13 @@ open class Page {
         infoboxes.joinElements() +
         "{{Games|${games.joinToString("|")}}}" +
         "\n" +
-        intro.joinSections() +
+        intros.joinSections() +
         sections.joinSections { "==${it.first}==\n${it.second}" } +
         navboxes.joinSections { "{{$it}}" } +
         categories.joinElementSection() +
         interlanguageLinks.joinElementSection()
 }
+
 
 fun <T> List<T>.join(separator: CharSequence, maybePostfix: CharSequence, transform: ((T) -> CharSequence)? = null) =
     if (this.isEmpty())

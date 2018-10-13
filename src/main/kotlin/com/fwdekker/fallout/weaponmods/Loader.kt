@@ -158,15 +158,8 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             "baseid" to namedAggregation { it.formIDTemplate }
         ))
 
-    private fun createHeading() =
-        """
-        The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in ${appearanceString}.
-        """.trimIndent()
-
     private fun createEffects() =
-        """
-        <!-- Variable --> // TODO
-        """.trimIndent()
+        "<!-- Variable --> // TODO"
 
     private fun singleTable() =
         """
@@ -207,23 +200,18 @@ ${weaponMods
         else
             multiTable()
 
-    private fun createLocations() =
-        "The $modName can be crafted at any [[weapons workbench]]."
-
-    private fun createCategories() =
-        games.mapNotNull { it.modCategory }.map { Category(it) }
-
     fun createPage(): Page =
         Page().also { page ->
-            page.games.addAll(games.map { it.abbreviation })
-            page.infoboxes.add(createInfobox())
-            page.intro.add(createHeading())
-            page.sections.addAll(listOf(
-                Pair("Effects", createEffects()),
-                Pair("Production", createProduction()),
-                Pair("Location", createLocations())
-            ))
-            page.categories.addAll(createCategories())
+            page.games += games.map { it.abbreviation }
+            page.infoboxes += createInfobox()
+            page.intros += "The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString."
+            page.sections +=
+                listOf(
+                    Pair("Effects", createEffects()),
+                    Pair("Production", createProduction()),
+                    Pair("Location", "The $modName can be crafted at any [[weapons workbench]].")
+                )
+            page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
         }
 
     fun namedAggregation(property: (WeaponMod) -> String) =
