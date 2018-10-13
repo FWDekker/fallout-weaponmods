@@ -157,7 +157,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         |value        =${namedAggregation { it.value.toString() }}
         |weight       =${namedAggregation { it.weight.toString() }}
         |baseid       =${namedAggregation { it.formIDTemplate }}
-        }}{{Games|${games.joinToString("|") { it.abbreviation }}}}
+        }}
         """.trimIndent()
 
     private fun createHeading() =
@@ -167,7 +167,6 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private fun createEffects() =
         """
-        ==Effects==
         <!-- Variable --> // TODO
         """.trimIndent()
 
@@ -191,50 +190,43 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private fun multiTable() =
         """
-        {|class="va-table va-table-center sortable"
-        !style="width:180px;"| Weapon
-        ${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
-        ${weaponMods
+{|class="va-table va-table-center sortable"
+!style="width:180px;"| Weapon
+${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
+${weaponMods
             .joinToString("") { mod ->
                 "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
                     .map { ing -> Pair(ing, mod.components.singleOrNull { comp -> ing == comp.first }?.second ?: 0) }
                     .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
             }
         }
-        |}
+|}
         """.trimIndent()
 
     private fun createProduction() =
-        "==Production==" +
-            if (weaponMods.size == 1)
-                singleTable()
-            else
-                multiTable()
+        if (weaponMods.size == 1)
+            singleTable()
+        else
+            multiTable()
 
     private fun createLocations() =
-        "==Locations==\nThe $modName can be crafted at any [[weapons workbench]]."
+        "The $modName can be crafted at any [[weapons workbench]]."
 
     private fun createCategories() =
-        games.asSequence()
-            .mapNotNull { it.modCategory }
-            .joinToString("\n") { "[[Category:$it]]" }
+        games.mapNotNull { it.modCategory }.map { Category(it) }
 
-    val wikiPageString =
-        """
-        ${createInfobox()}
-
-        ${createHeading()}
-
-        ${createEffects()}
-
-        ${createProduction()}
-
-        ${createLocations()}
-
-        {{Navbox weapon mods FO4}}
-
-        ${createCategories()}
-        """.trimIndent()
+    fun createPage(): Page =
+        Page().also { page ->
+            page.games.addAll(games.map { it.abbreviation })
+            page.infoboxes.add(createInfobox())
+            page.intro.add(createHeading())
+            page.sections.addAll(listOf(
+                Pair("Effects", createEffects()),
+                Pair("Production", createProduction()),
+                Pair("Location", createLocations())
+            ))
+            page.categories.addAll(createCategories())
+        }
 
     fun namedAggregation(property: (WeaponMod) -> String) =
         if (weaponMods.map(property).distinct().size == 1)
@@ -277,5 +269,5 @@ private fun launch(database: GameDatabase, modName: String) {
     }
 
     val selection = WeaponSelection(modName, weaponMods)
-    println(selection.wikiPageString)
+    println(selection.createPage().toString())
 }
