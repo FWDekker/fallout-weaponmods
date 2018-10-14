@@ -36,6 +36,7 @@ data class WeaponMod(
     val weapon: Weapon,
     val effects: String,
     val components: Map<Component, Int>,
+    val perkRequirements: Map<Perk, Int>,
     val value: Int,
     val weight: Double,
     val image: String
@@ -71,11 +72,19 @@ data class WeaponMod(
             val model = Model.get(looseMod.model)
             require(model != null) { "Could not find model `${looseMod.model}`." }
 
+            val perks = craftableObject.conditions
+                .filter { it.perk.isNotEmpty() }
+                .map {
+                    // TODO handle null
+                    Pair(Perk.get(it.perk.substringBefore("0"))!!, it.perk.substringAfter("0").toInt())
+                }
+                .toMap()
+
             val weapon = Weapon.get(objectModifier.weaponName)
             require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
 
             val formIDTemplate = formIDtoTemplate(looseMod.formID.toString(16))
-            val components = craftableObject.components  // TODO fix component capitalisation
+            val components = craftableObject.components  // TODO fix component capitalisation and links
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
                 .toMap()
 
@@ -85,6 +94,7 @@ data class WeaponMod(
                 weapon = weapon!!,
                 effects = objectModifier.description,
                 components = components,
+                perkRequirements = perks,
                 value = looseMod.value,
                 weight = looseMod.weight,
                 image = model!!.image
@@ -149,7 +159,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return CraftingTable(
             materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
-            perks = emptyList(),
+            perks = mod.perkRequirements.map { Pair(it.key.name, it.value) }, // TODO insert link to perk
             products = listOf(modName to 1)
         ).toString()
     }

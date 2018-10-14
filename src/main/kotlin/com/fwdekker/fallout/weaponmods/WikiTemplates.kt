@@ -67,7 +67,7 @@ data class CraftingTable(
                 )
             } +
         Pair("workspace", workspace) +
-        perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk$i" to "${pair.first} (${pair.second})" } +
+        perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk${i + 1}" to "${pair.first} (${pair.second})" } +
         products
             .sortedBy { it.first }
             .mapIndexed { i, b -> Pair(i + 1, b) }
