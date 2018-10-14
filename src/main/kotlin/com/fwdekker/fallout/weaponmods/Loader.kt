@@ -108,20 +108,20 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private val appearanceString = // TODO clean up
         if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
-            games[0].link.toString()
+            "''${games[0].link}''"
         else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
-            "${ESM.get("Fallout4.esm")!!.link} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
+            "''${ESM.get("Fallout4.esm")!!.link}'' and its [[Fallout 4 add-ons|add-on]] ''${games.asSequence()
                 .filterNot { it == ESM.get("Fallout4.esm") }
                 .first()
                 .link
-            }"
+            }''"
         else
-            "${ESM.get("Fallout4.esm")!!.link} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
+            "''${ESM.get("Fallout4.esm")!!.link}'' and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
                 .asSequence()
                 .filterNot { it == ESM.get("Fallout4.esm") }
                 .map { it.link }
-                .joinToString(", ")
-            } and ${games.last().link}"
+                .joinToString(", ") { "''$it''" }
+            } and ''${games.last().link}''"
 
 
     private fun createInfobox(): WikiTemplate {
@@ -133,7 +133,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.weapon.link.toString() },
+                "modifies" to weaponMods.joinToString("<br />") { it.weapon.link.toString(capitalize = true) },
                 "value" to namedAggregation { it.value.toString() },
                 "weight" to namedAggregation { it.weight.toString() },
                 "baseid" to namedAggregation { it.formIDTemplate }
