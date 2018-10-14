@@ -145,7 +145,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return Section("Effects", "<!-- Variable --> // TODO")
     }
 
-    private fun weaponProductionTable(mod: WeaponMod): String {
+    private fun createProductionTable(mod: WeaponMod): String {
         return CraftingTable(
             materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
@@ -159,8 +159,8 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             "",
             subsections = weaponMods.map { weaponMod ->
                 Section(
-                    weaponMod.weapon.link.toString(),
-                    weaponProductionTable(weaponMod),
+                    weaponMod.weapon.link.toString(capitalize = true),
+                    createProductionTable(weaponMod),
                     level = 3
                 )
             })
