@@ -136,24 +136,6 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 .joinToString(", ")
             } and ${games.last().getWikiLink()}"
 
-    private val longestWeaponLink = weaponMods.asSequence()
-        .map { it.weapon.getWikiLink().toString() }
-        .maxBy { it.length }!!
-        .length
-    private val longestIngredientNumber = ingredients
-        .map { ing ->
-            Pair(
-                ing,
-                weaponMods
-                    .flatMap { it.components.entries }
-                    .asSequence()
-                    .filter { it.key == ing }
-                    .maxBy { it.value }!!
-                    .value.toString().length
-            )
-        }
-        .toMap()
-
     private fun createInfobox() =
         MultilineTemplate(
             "Infobox item",
@@ -185,26 +167,8 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             products = listOf(modName.capitalize() to Range(1, 1))
         ).toString()
 
-    private fun multiTable() =
-        """
-{|class="va-table va-table-center sortable"
-!style="width:180px;"| Weapon
-${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
-${weaponMods
-            .joinToString("") { mod ->
-                "|-\n| ${mod.weapon.getWikiLink().toString().padEnd(longestWeaponLink)} ${ingredients.asSequence()
-                    .map { ing ->
-                        Pair(ing,
-                            mod.components.entries.singleOrNull { comp -> ing == comp.key }?.value ?: 0)
-                    }
-                    .joinToString("") { "|| ${it.second.toString().padStart(longestIngredientNumber[it.first]!!)} " }}\n"
-            }
-        }
-|}
-        """.trimIndent()
-
     private fun createProduction() =
-        singleTable() + "\n\n" + multiTable()
+        singleTable()
 
     fun createPage(): Page =
         Page().also { page ->
@@ -213,9 +177,9 @@ ${weaponMods
             page.intros += "The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString."
             page.sections +=
                 listOf(
-                    Pair("Effects", createEffects()),
-                    Pair("Production", createProduction()),
-                    Pair("Location", "The $modName can be crafted at any [[weapons workbench]].")
+                    Section("Effects", createEffects()),
+                    Section("Production", createProduction()),
+                    Section("Location", "The $modName can be crafted at any [[weapons workbench]].")
                 )
             page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
         }

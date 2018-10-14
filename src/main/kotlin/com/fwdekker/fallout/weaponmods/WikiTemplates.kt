@@ -7,6 +7,32 @@ fun formIDtoTemplate(formID: String) =
     else
         "{{ID|${formID.takeLast(6)}}}"
 
+class Section(
+    val title: String,
+    val contents: String,
+    val level: Int = 2,
+    val subsections: List<Section> = emptyList()
+) {
+    private fun formatTitle(): String {
+        return "=".repeat(level) + title + "=".repeat(level) + "\n"
+    }
+
+    private fun formatSubsections(): String {
+        return if (subsections.isEmpty())
+            ""
+        else
+            "\n\n" + subsections.joinToString("\n\n")
+    }
+
+
+    override fun toString(): String {
+        return "" +
+            formatTitle() +
+            contents +
+            formatSubsections()
+    }
+}
+
 open class MultilineTemplate(
     private val template: String,
     private val values: List<Pair<String, String>>,
@@ -58,7 +84,7 @@ open class Page {
     val infoboxes = mutableListOf<MultilineTemplate>()
     val games = mutableListOf<String>()
     val intros = mutableListOf<String>()
-    val sections = mutableListOf<Pair<String, String>>()
+    val sections = mutableListOf<Section>()
     val navboxes = mutableListOf<String>()
     val categories = mutableListOf<Link>()
     val interlanguageLinks = mutableListOf<InterlanguageLink>()
@@ -69,7 +95,7 @@ open class Page {
         "{{Games|${games.joinToString("|")}}}\n" +
         "\n" +
         intros.joinSections() +
-        sections.joinSections { "==${it.first}==\n${it.second}" } +
+        sections.joinToString("\n\n") +
         navboxes.joinSections { "{{$it}}" } +
         categories.joinElementSection() +
         interlanguageLinks.joinElementSection()
