@@ -30,7 +30,6 @@ data class GameDatabase(
     }
 }
 
-
 data class WeaponMod(
     val esm: ESM,
     val formIDTemplate: String,
@@ -63,7 +62,7 @@ data class WeaponMod(
             objectModifier: ObjectModifier,
             craftableObject: CraftableObject,
             database: GameDatabase
-        ): WeaponMod? {
+        ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
             val esm = ESM.get(looseMod.file)
@@ -72,9 +71,10 @@ data class WeaponMod(
             val model = Model.get(looseMod.model)
             require(model != null) { "Could not find model `${looseMod.model}`." }
 
+            val weapon = Weapon.get(objectModifier.weaponName)
+            require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
+
             val formIDTemplate = formIDtoTemplate(looseMod.formID.toString(16))
-            val weapon = Weapon.get(objectModifier.weaponName.toLowerCase())
-                ?: return null
             val components = craftableObject.components  // TODO fix component capitalisation
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
                 .toMap()
@@ -82,7 +82,7 @@ data class WeaponMod(
             return WeaponMod(
                 esm = esm!!,
                 formIDTemplate = formIDTemplate,
-                weapon = weapon,
+                weapon = weapon!!,
                 effects = objectModifier.description,
                 components = components,
                 value = looseMod.value,
@@ -92,6 +92,7 @@ data class WeaponMod(
         }
     }
 }
+
 
 class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
     private val image = weaponMods
@@ -194,6 +195,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
     }
 }
+
 
 fun main(args: Array<String>) {
     val logger = KLogging().logger
