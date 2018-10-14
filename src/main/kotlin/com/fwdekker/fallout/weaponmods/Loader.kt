@@ -133,7 +133,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink().toString() },
+                "modifies" to weaponMods.joinToString("<br />") { it.weapon.link.toString() },
                 "value" to namedAggregation { it.value.toString() },
                 "weight" to namedAggregation { it.weight.toString() },
                 "baseid" to namedAggregation { it.formIDTemplate }
@@ -159,7 +159,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             "",
             subsections = weaponMods.map { weaponMod ->
                 Section(
-                    weaponMod.weapon.getWikiLink().toString(),
+                    weaponMod.weapon.link.toString(),
                     weaponProductionTable(weaponMod),
                     level = 3
                 )
