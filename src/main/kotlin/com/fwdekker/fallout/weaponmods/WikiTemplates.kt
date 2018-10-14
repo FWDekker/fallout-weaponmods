@@ -39,7 +39,16 @@ data class CraftingTable(
                 )
             } +
         Pair("workspace", workspace) +
-        perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk$i" to "${pair.first} (${pair.second})" }
+        perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk$i" to "${pair.first} (${pair.second})" } +
+        products
+            .sortedBy { it.first }
+            .mapIndexed { i, b -> Pair(i, b) }
+            .flatMap { b ->
+                listOf(
+                    Pair("product${b.first}", b.second.first),
+                    Pair("product#${b.first}", b.second.second.toString())
+                )
+            }
 ) {
     override fun toString() = super.toString() // This is necessary for some reason
 }
