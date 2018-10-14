@@ -7,15 +7,43 @@ fun formIDtoTemplate(formID: String) =
     else
         "{{ID|${formID.takeLast(6)}}}"
 
-open class MultilineTemplate(
+/**
+ * A MediaWiki template.
+ *
+ * @property template the name of the template
+ * @property values the key-value pairs of the template
+ */
+open class WikiTemplate(
     private val template: String,
-    private val values: List<Pair<String, String>>,
-    private val keyWidth: Int = (values.map { it.first.length }.max() ?: 0) + 1
+    private val values: List<Pair<String, String>>
 ) {
-    override fun toString() = "" +
-        "{{$template\n" +
-        values.joinToString("\n") { "|" + it.first.padEnd(keyWidth) + "=" + it.second } + "\n" +
-        "}}"
+    // TODO support unnamed arguments
+    private val keyWidth: Int = (values.map { it.first.length }.max() ?: 0) + 1
+
+
+    /**
+     * Formats the template as a multiline string.
+     *
+     * @return the template as a multiline string
+     */
+    override fun toString(): String {
+        return toString(true)
+    }
+
+    /**
+     * Formats the template as a string.
+     *
+     * @param multiline true iff each key-value pair should be on its own line
+     * @return the template as a string
+     */
+    fun toString(multiline: Boolean): String {
+        val newline = if (multiline) "\n" else ""
+
+        return "" +
+            "{{$template$newline" +
+            values.joinToString(newline) { "|" + it.first.padEnd(keyWidth) + "=" + it.second } + newline +
+            "}}"
+    }
 }
 
 data class CraftingTable(
@@ -24,7 +52,7 @@ data class CraftingTable(
     val workspace: String,
     val perks: List<Pair<String, Int>>,
     val products: List<Pair<String, Int>>
-) : MultilineTemplate(
+) : WikiTemplate(
     // TODO clean up these parameters
     "Crafting table",
     listOf<Pair<String, String>>() +

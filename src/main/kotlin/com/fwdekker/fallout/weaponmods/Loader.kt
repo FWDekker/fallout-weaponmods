@@ -124,8 +124,8 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             } and ${games.last().link}"
 
 
-    private fun createInfobox(): MultilineTemplate {
-        return MultilineTemplate(
+    private fun createInfobox(): WikiTemplate {
+        return WikiTemplate(
             "Infobox item",
             listOf(
                 "games" to games.joinToString(", ") { it.abbreviation },

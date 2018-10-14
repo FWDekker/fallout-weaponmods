@@ -15,7 +15,7 @@ package com.fwdekker.fallout.weaponmods
  */
 class Article {
     val notices = mutableListOf<String>()
-    val infoboxes = mutableListOf<MultilineTemplate>()
+    val infoboxes = mutableListOf<WikiTemplate>()
     val games = mutableListOf<String>()
     var intro: String = ""
     val sections = mutableListOf<Section>()
