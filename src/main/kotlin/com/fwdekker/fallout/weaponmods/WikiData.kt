@@ -99,3 +99,30 @@ data class Model(
         fun get(model: String) = models[model.toLowerCase()]
     }
 }
+
+/**
+ * Maps a perk editor ID to its rank and a Nukapedia page.
+ *
+ * @property editorID the editor ID of the perk, excluding the rank
+ * @property name the name of the perk
+ * @property page the Nukapedia page for the perk
+ */
+data class Perk(
+    val editorID: String,
+    val name: String,
+    val page: String
+) {
+    companion object {
+        private val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
+            .map { Pair(it.editorID.toLowerCase(), it) }
+            .toMap()
+
+        /**
+         * Returns the [Perk] corresponding to the given editor ID.
+         *
+         * @param editorID the editor ID of the perk, excluding the rank
+         * @return the [Perk] corresponding to the given editor ID
+         */
+        fun get(editorID: String) = perks[editorID.toLowerCase()]
+    }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "editorID": "Armorer",
+    "name": "Armorer",
+    "page": "Armorer"
+  },
+  {
+    "editorID": "Basher",
+    "name": "Basher",
+    "page": "Basher"
+  },
+  {
+    "editorID": "BigLeagues",
+    "name": "Big Leagues",
+    "page": "Big Leagues"
+  },
+  {
+    "editorID": "Blacksmith",
+    "name": "Blacksmith",
+    "page": "Blacksmith"
+  },
+  {
+    "editorID": "Blitz",
+    "name": "Blitz",
+    "page": "Blitz"
+  },
+  {
+    "editorID": "Commando",
+    "name": "Commando",
+    "page": "Commando"
+  },
+  {
+    "editorID": "DemolitionExpert",
+    "name": "Demolition Expert",
+    "page": "Demolition Expert"
+  },
+  {
+    "editorID": "GunNut",
+    "name": "Gun Nut",
+    "page": "Gun Nut"
+  },
+  {
+    "editorID": "Gunslinger",
+    "name": "Gunslinger",
+    "page": "Gunslinger"
+  },
+  {
+    "editorID": "IronFirst",
+    "name": "Iron Fist",
+    "page": "Iron Fist"
+  },
+  {
+    "editorID": "LoneWanderer",
+    "name": "Lone Wanderer",
+    "page": "Lone Wanderer (perk)"
+  },
+  {
+    "editorID": "Ninja",
+    "name": "Ninja",
+    "page": "Ninja"
+  },
+  {
+    "editorID": "Pickpocket",
+    "name": "Pickpocket",
+    "page": "Pickpocket"
+  },
+  {
+    "editorID": "Rifleman",
+    "name": "Rifleman",
+    "page": "Rifleman"
+  },
+  {
+    "editorID": "RoboticsExpert",
+    "name": "Robotics Expert",
+    "page": "Robotics Expert"
+  },
+  {
+    "editorID": "Rooted",
+    "name": "Rooted",
+    "page": "Rooted"
+  },
+  {
+    "editorID": "Science",
+    "name": "Science!",
+    "page": "Science!"
+  },
+  {
+    "editorID": "Scrounger",
+    "name": "Scrounger",
+    "page": "Scrounger"
+  },
+  {
+    "editorID": "Sneak",
+    "name": "Sneak",
+    "page": "Sneak (perk)"
+  },
+  {
+    "editorID": "Sniper",
+    "name": "Sniper",
+    "page": "Sniper"
+  }
+]
