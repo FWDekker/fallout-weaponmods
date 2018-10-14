@@ -137,7 +137,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             } and ${games.last().getWikiLink()}"
 
     private val longestWeaponLink = weaponMods.asSequence()
-        .map { it.weapon.getWikiLink() }
+        .map { it.weapon.getWikiLink().toString() }
         .maxBy { it.length }!!
         .length
     private val longestIngredientNumber = ingredients
@@ -163,7 +163,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink() },
+                "modifies" to weaponMods.joinToString("<br />") { it.weapon.getWikiLink().toString() },
                 "value" to namedAggregation { it.value.toString() },
                 "weight" to namedAggregation { it.weight.toString() },
                 "baseid" to namedAggregation { it.formIDTemplate }
@@ -192,7 +192,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 ${ingredients.joinToString("\n") { "!style=\"width:180px;\"| ${it.name}" }}
 ${weaponMods
             .joinToString("") { mod ->
-                "|-\n| ${mod.weapon.getWikiLink().padEnd(longestWeaponLink)} ${ingredients.asSequence()
+                "|-\n| ${mod.weapon.getWikiLink().toString().padEnd(longestWeaponLink)} ${ingredients.asSequence()
                     .map { ing ->
                         Pair(ing,
                             mod.components.entries.singleOrNull { comp -> ing == comp.key }?.value ?: 0)

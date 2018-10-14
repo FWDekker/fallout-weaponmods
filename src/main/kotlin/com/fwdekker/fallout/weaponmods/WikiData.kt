@@ -10,9 +10,7 @@ data class Weapon(
     val name: String,
     val page: String
 ) {
-    fun getWikiLink() =
-        if (name.capitalize() == page) "[[${name.capitalize()}]]"
-        else "[[$page|${name.capitalize()}]]"
+    fun getWikiLink() = Link(page, name)
 
 
     companion object {

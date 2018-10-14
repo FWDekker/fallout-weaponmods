@@ -3,7 +3,7 @@ package com.fwdekker.fallout.weaponmods
 
 open class Link(val target: String, val text: String = target) {
     override fun toString() =
-        if (target == text)
+        if (target.capitalize() == text.capitalize())
             "[[$target]]"
         else
             "[[$target|$text]]"
