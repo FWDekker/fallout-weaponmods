@@ -1,11 +1,12 @@
 package com.fwdekker.fallout.weaponmods
 
 
-fun formIDtoTemplate(formID: String) =
-    if (formID.dropWhile { it == '0' }.length > 6)
+fun formIDtoTemplate(formID: String): String {
+    return if (formID.dropWhile { it == '0' }.length > 6)
         "{{DLC ID|${formID.takeLast(6)}}}"
     else
         "{{ID|${formID.takeLast(6)}}}"
+}
 
 /**
  * A MediaWiki template.
