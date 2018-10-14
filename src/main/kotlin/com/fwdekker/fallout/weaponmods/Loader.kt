@@ -182,6 +182,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                     createProduction(),
                     createLocation()
                 )
+            page.navboxes += "Navbox weapon mods FO4"
             page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
         }
     }
