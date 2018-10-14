@@ -165,15 +165,18 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
     }
 
     private fun createProduction(): Section {
-        return Section("Production",
-            "",
-            subsections = weaponMods.map { weaponMod ->
-                Section(
-                    weaponMod.weapon.link.toString(capitalize = true),
-                    createProductionTable(weaponMod),
-                    level = 3
-                )
-            })
+        return if (weaponMods.size == 1)
+            Section("Production", createProductionTable(weaponMods[0]))
+        else
+            Section("Production",
+                "",
+                subsections = weaponMods.map { weaponMod ->
+                    Section(
+                        weaponMod.weapon.link.toString(capitalize = true),
+                        createProductionTable(weaponMod),
+                        level = 3
+                    )
+                })
     }
 
     private fun createLocation(): Section {
