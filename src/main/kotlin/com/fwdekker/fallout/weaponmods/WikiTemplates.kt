@@ -8,20 +8,21 @@ fun formIDtoTemplate(formID: String) =
         "{{ID|${formID.takeLast(6)}}}"
 
 class Section(
-    val title: String,
-    val contents: String,
-    val level: Int = 2,
-    val subsections: List<Section> = emptyList()
+    private val title: String,
+    private val contents: String,
+    private val level: Int = 2,
+    private val subsections: List<Section> = emptyList()
 ) {
     private fun formatTitle(): String {
         return "=".repeat(level) + title + "=".repeat(level) + "\n"
     }
 
     private fun formatSubsections(): String {
-        return if (subsections.isEmpty())
-            ""
-        else
-            "\n\n" + subsections.joinToString("\n\n")
+        return when {
+            subsections.isEmpty() -> ""
+            contents.isEmpty() -> subsections.joinToString("\n\n")
+            else -> "\n\n" + subsections.joinToString("\n\n")
+        }
     }
 
 
@@ -46,10 +47,10 @@ open class MultilineTemplate(
 
 data class CraftingTable(
     val type: String = "",
-    val materials: List<Pair<String, Range>>,
+    val materials: List<Pair<String, Int>>,
     val workspace: String,
-    val perks: List<Pair<String, Range>>,
-    val products: List<Pair<String, Range>>
+    val perks: List<Pair<String, Int>>,
+    val products: List<Pair<String, Int>>
 ) : MultilineTemplate(
     // TODO clean up these parameters
     "Crafting table",

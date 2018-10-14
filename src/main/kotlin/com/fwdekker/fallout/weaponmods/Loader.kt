@@ -155,20 +155,24 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
     private fun createEffects() =
         "<!-- Variable --> // TODO"
 
-    private fun singleTable() =
+    private fun weaponProductionTable(mod: WeaponMod) =
         CraftingTable(
-            materials = ingredients.map { ingredient ->
-                val amounts = weaponMods.mapNotNull { it.components[ingredient] }
-
-                Pair(ingredient.name, Range(amounts.min()!!, amounts.max()!!)) // TODO catch !!s?
-            },
+            materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
             perks = emptyList(),
-            products = listOf(modName.capitalize() to Range(1, 1))
+            products = listOf(modName to 1)
         ).toString()
 
     private fun createProduction() =
-        singleTable()
+        Section("Production",
+            "",
+            subsections = weaponMods.map { weaponMod ->
+                Section(
+                    weaponMod.weapon.getWikiLink().toString(),
+                    weaponProductionTable(weaponMod),
+                    level = 3
+                )
+            })
 
     fun createPage(): Page =
         Page().also { page ->
@@ -178,7 +182,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             page.sections +=
                 listOf(
                     Section("Effects", createEffects()),
-                    Section("Production", createProduction()),
+                    createProduction(),
                     Section("Location", "The $modName can be crafted at any [[weapons workbench]].")
                 )
             page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
