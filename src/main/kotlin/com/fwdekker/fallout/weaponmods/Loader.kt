@@ -93,14 +93,6 @@ data class WeaponMod(
     }
 }
 
-data class Range(val min: Int, val max: Int) {
-    override fun toString() =
-        if (min == max)
-            min.toString()
-        else
-            "$min–$max"
-}
-
 class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
     private val image = weaponMods
         .groupingBy { it.image }
@@ -112,12 +104,6 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         .distinct()
         .toList()
         .sortedBy { it.name }
-    private val ingredients =
-        weaponMods.flatMap { mod -> mod.components.map { it.key } }
-            .asSequence()
-            .distinct()
-            .sortedBy { it.name }
-            .toList()
 
     private val appearanceString = // TODO clean up
         if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
@@ -136,8 +122,9 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 .joinToString(", ")
             } and ${games.last().getWikiLink()}"
 
-    private fun createInfobox() =
-        MultilineTemplate(
+
+    private fun createInfobox(): MultilineTemplate {
+        return MultilineTemplate(
             "Infobox item",
             listOf(
                 "games" to games.joinToString(", ") { it.abbreviation },
@@ -151,20 +138,23 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "baseid" to namedAggregation { it.formIDTemplate }
             )
         )
+    }
 
-    private fun createEffects() =
-        "<!-- Variable --> // TODO"
+    private fun createEffects(): Section {
+        return Section("Effects", "<!-- Variable --> // TODO")
+    }
 
-    private fun weaponProductionTable(mod: WeaponMod) =
-        CraftingTable(
+    private fun weaponProductionTable(mod: WeaponMod): String {
+        return CraftingTable(
             materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
             perks = emptyList(),
             products = listOf(modName to 1)
         ).toString()
+    }
 
-    private fun createProduction() =
-        Section("Production",
+    private fun createProduction(): Section {
+        return Section("Production",
             "",
             subsections = weaponMods.map { weaponMod ->
                 Section(
@@ -173,26 +163,36 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                     level = 3
                 )
             })
+    }
 
-    fun createPage(): Page =
-        Page().also { page ->
+    private fun createLocation(): Section {
+        return Section("Location", "The $modName can be crafted at any [[weapons workbench]].")
+    }
+
+
+    fun createPage(): Page {
+        return Page().also { page ->
             page.games += games.map { it.abbreviation }
             page.infoboxes += createInfobox()
             page.intros += "The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString."
             page.sections +=
                 listOf(
-                    Section("Effects", createEffects()),
+                    createEffects(),
                     createProduction(),
-                    Section("Location", "The $modName can be crafted at any [[weapons workbench]].")
+                    createLocation()
                 )
             page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
         }
+    }
 
-    fun namedAggregation(property: (WeaponMod) -> String) =
-        if (weaponMods.map(property).distinct().size == 1)
+
+    private fun namedAggregation(property: (WeaponMod) -> String): String {
+        // TODO remove this function?
+        return if (weaponMods.map(property).distinct().size == 1)
             property(weaponMods[0]) // TODO check if empty
         else
             weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
+    }
 }
 
 fun main(args: Array<String>) {
