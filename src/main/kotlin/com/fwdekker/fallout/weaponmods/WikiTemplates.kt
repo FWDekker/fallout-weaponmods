@@ -15,7 +15,7 @@ fun formIDtoTemplate(formID: String) =
  */
 open class WikiTemplate(
     private val template: String,
-    private val values: List<Pair<String, String>>
+    private val values: List<Pair<String, String>> = emptyList()
 ) {
     // TODO support unnamed arguments
     private val keyWidth: Int = (values.map { it.first.length }.max() ?: 0) + 1

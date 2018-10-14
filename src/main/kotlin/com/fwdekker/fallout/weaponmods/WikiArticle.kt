@@ -19,7 +19,7 @@ class Article {
     val games = mutableListOf<String>()
     var intro: String = ""
     val sections = mutableListOf<Section>()
-    val navboxes = mutableListOf<String>()
+    val navboxes = mutableListOf<WikiTemplate>()
     val categories = mutableListOf<Link>()
     val interlanguageLinks = mutableListOf<InterlanguageLink>()
 
@@ -90,7 +90,7 @@ class Article {
 
 
     private fun formatNavboxes(): String {
-        return navboxes.joinToString("\n").addNewlinesIfNotEmpty(2)
+        return navboxes.joinToString("\n") { it.toString(multiline = false) }.addNewlinesIfNotEmpty(2)
     }
 
     private fun formatCategories(): String {
