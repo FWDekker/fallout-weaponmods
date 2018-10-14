@@ -5,6 +5,44 @@ import java.io.File
 
 
 /**
+ * An ESM as described on Nukapedia.
+ *
+ * Essentially, this class describes both the base game and its add-ons.
+ *
+ * @property fileName the name of the ESM file
+ * @property name the name of the game/add-on the ESM corresponds to
+ * @property page the page on Nukapedia that describes this game/add-on
+ * @property abbreviation the abbreviation that is used on Nukapedia to describe this game/add-on
+ * @property modCategory the category on Nukapedia for weapon mods in this game/add-on
+ */
+data class ESM(
+    val fileName: String,
+    val name: String,
+    val page: String,
+    val abbreviation: String,
+    val modCategory: String? = null
+) {
+    val link = Link(page, name)
+
+
+    companion object {
+        // TODO move JSON to suitable location (same for Weapons)
+        // TODO handle errors (same for Weapons)
+        private val esms = Klaxon().parseArray<ESM>(File("esms.json").inputStream())!!
+            .map { Pair(it.fileName.toLowerCase(), it) }
+            .toMap()
+
+        /**
+         * Returns the [ESM] corresponding to the given file name.
+         *
+         * @param fileName the name of the ESM file
+         * @return the [ESM] corresponding to the given file name
+         */
+        fun get(fileName: String) = esms[fileName.toLowerCase()]
+    }
+}
+
+/**
  * A weapon on Nukapedia.
  *
  * @property file the name of the ESM in which the weapon is defined

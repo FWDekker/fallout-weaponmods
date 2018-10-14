@@ -108,20 +108,20 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private val appearanceString = // TODO clean up
         if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
-            games[0].getWikiLink()
+            games[0].link.toString()
         else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
-            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
+            "${ESM.get("Fallout4.esm")!!.link} and its [[Fallout 4 add-ons|add-on]] ${games.asSequence()
                 .filterNot { it == ESM.get("Fallout4.esm") }
                 .first()
-                .getWikiLink()
+                .link
             }"
         else
-            "${ESM.get("Fallout4.esm")!!.getWikiLink()} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
+            "${ESM.get("Fallout4.esm")!!.link} and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
                 .asSequence()
                 .filterNot { it == ESM.get("Fallout4.esm") }
-                .map { it.getWikiLink() }
+                .map { it.link }
                 .joinToString(", ")
-            } and ${games.last().getWikiLink()}"
+            } and ${games.last().link}"
 
 
     private fun createInfobox(): MultilineTemplate {
