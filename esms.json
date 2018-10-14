@@ -2,49 +2,49 @@
   {
     "fileName": "Fallout4.esm",
     "name": "Fallout 4",
-    "link": "Fallout 4",
+    "page": "Fallout 4",
     "abbreviation": "FO4",
     "modCategory": "Fallout 4 weapon mods"
   },
   {
     "fileName": "DLCCoast.esm",
     "name": "Far Harbor",
-    "link": "Far Harbor (add-on)",
+    "page": "Far Harbor (add-on)",
     "abbreviation": "FO4FH",
     "modCategory": null
   },
   {
     "fileName": "DLCNukaWorld.esm",
     "name": "Nuka-World",
-    "link": "Nuka-World (add-on)",
+    "page": "Nuka-World (add-on)",
     "abbreviation": "FO4NW",
     "modCategory": "Nuka-World weapon mods"
   },
   {
     "fileName": "DLCRobot.esm",
     "name": "Automatron",
-    "link": "Automatron (add-on)",
+    "page": "Automatron (add-on)",
     "abbreviation": "FO4AUT",
     "modCategory": "Automatron weapon mods"
   },
   {
     "fileName": "DLCWorkshop01.esm",
     "name": "Wasteland Workshop",
-    "link": "Wasteland Workshop",
+    "page": "Wasteland Workshop",
     "abbreviation": "FO4WW",
     "modCategory": null
   },
   {
     "fileName": "DLCWorkshop02.esm",
     "name": "Contraptions Workshop",
-    "link": "Contraptions Workshop",
+    "page": "Contraptions Workshop",
     "abbreviation": "FO4CW",
     "modCategory": null
   },
   {
     "fileName": "DLCWorkshop03",
     "name": "Vault-Tec Workshop",
-    "link": "Vault-Tec Workshop",
+    "page": "Vault-Tec Workshop",
     "abbreviation": "FO4VW",
     "modCategory": null
   }
