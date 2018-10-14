@@ -160,7 +160,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
             perks = mod.perkRequirements.map { Pair(it.key.name, it.value) }, // TODO insert link to perk
-            products = listOf(modName to 1)
+            products = listOf(modName.capitalize() to 1)
         ).toString()
     }
 
