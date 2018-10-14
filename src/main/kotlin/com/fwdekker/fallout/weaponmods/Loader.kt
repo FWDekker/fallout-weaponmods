@@ -182,7 +182,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
             },
             workspace = "[[Weapons workbench]]",
             perks = emptyList(),
-            products = listOf(modName to Range(1, 1))
+            products = listOf(modName.capitalize() to Range(1, 1))
         ).toString()
 
     private fun multiTable() =

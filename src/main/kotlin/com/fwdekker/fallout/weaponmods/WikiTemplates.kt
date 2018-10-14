@@ -31,7 +31,7 @@ data class CraftingTable(
         listOf("type" to type) +
         materials
             .sortedBy { it.first }
-            .mapIndexed { i, b -> Pair(i, b) }
+            .mapIndexed { i, b -> Pair(i + 1, b) }
             .flatMap { b ->
                 listOf(
                     Pair("material${b.first}", b.second.first),
@@ -42,7 +42,7 @@ data class CraftingTable(
         perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk$i" to "${pair.first} (${pair.second})" } +
         products
             .sortedBy { it.first }
-            .mapIndexed { i, b -> Pair(i, b) }
+            .mapIndexed { i, b -> Pair(i + 1, b) }
             .flatMap { b ->
                 listOf(
                     Pair("product${b.first}", b.second.first),
@@ -66,7 +66,7 @@ open class Page {
     override fun toString(): String = "" +
         notices.joinElements { "{{$it}}" } +
         infoboxes.joinToString("\n") +
-        "{{Games|${games.joinToString("|")}}}" +
+        "{{Games|${games.joinToString("|")}}}\n" +
         "\n" +
         intros.joinSections() +
         sections.joinSections { "==${it.first}==\n${it.second}" } +
