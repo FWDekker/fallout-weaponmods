@@ -174,7 +174,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return Page().also { page ->
             page.games += games.map { it.abbreviation }
             page.infoboxes += createInfobox()
-            page.intros += "The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString."
+            page.intro = "The '''$modName''' is a [[Fallout 4 weapon mods|weapon mod]] in $appearanceString."
             page.sections +=
                 listOf(
                     createEffects(),

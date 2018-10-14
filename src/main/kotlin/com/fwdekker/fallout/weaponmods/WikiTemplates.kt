@@ -80,37 +80,89 @@ data class CraftingTable(
     override fun toString() = super.toString() // This is necessary for some reason
 }
 
-open class Page {
+class Page {
     val notices = mutableListOf<String>()
     val infoboxes = mutableListOf<MultilineTemplate>()
     val games = mutableListOf<String>()
-    val intros = mutableListOf<String>()
+    var intro: String = ""
     val sections = mutableListOf<Section>()
     val navboxes = mutableListOf<String>()
     val categories = mutableListOf<Link>()
     val interlanguageLinks = mutableListOf<InterlanguageLink>()
 
-    override fun toString(): String = "" +
-        notices.joinElements { "{{$it}}" } +
-        infoboxes.joinToString("\n") +
-        "{{Games|${games.joinToString("|")}}}\n" +
-        "\n" +
-        intros.joinSections() +
-        sections.joinToString("\n\n") +
-        navboxes.joinSections { "{{$it}}" } +
-        categories.joinElementSection() +
-        interlanguageLinks.joinElementSection()
+
+    private fun String.addNewlineIfNotEmpty(): String {
+        return addNewlinesIfNotEmpty(1)
+    }
+
+    private fun String.addNewlinesIfNotEmpty(newlines: Int): String {
+        return if (this.isEmpty())
+            ""
+        else
+            this + "\n".repeat(newlines)
+    }
+
+
+    private fun formatNotices(): String {
+        return notices.joinToString("\n")
+    }
+
+    private fun formatInfoboxes(): String {
+        return infoboxes.joinToString("\n")
+    }
+
+    private fun formatGames(): String {
+        return if (games.isEmpty())
+            ""
+        else
+            "{{Games|${games.joinToString("|")}}}"
+    }
+
+    private fun formatHeader(): String {
+        var result = ""
+        result += formatNotices().addNewlineIfNotEmpty()
+        result += formatInfoboxes()
+        if (!formatGames().isEmpty())
+            result += formatGames()
+
+        if (result.isNotEmpty())
+            result += "\n\n"
+
+        return result
+    }
+
+
+    private fun formatIntro(): String {
+        return intro.addNewlinesIfNotEmpty(2)
+    }
+
+    private fun formatSections(): String {
+        return sections.joinToString("\n\n").addNewlinesIfNotEmpty(2)
+    }
+
+    private fun formatBody(): String {
+        return formatIntro() + formatSections()
+    }
+
+
+    private fun formatNavboxes(): String {
+        return navboxes.joinToString("\n").addNewlinesIfNotEmpty(2)
+    }
+
+    private fun formatCategories(): String {
+        return categories.joinToString("\n").addNewlinesIfNotEmpty(2)
+    }
+
+    private fun formatInterlanguageLinks(): String {
+        return interlanguageLinks.joinToString("\n")
+    }
+
+    private fun formatFooter(): String {
+        return formatNavboxes() + formatCategories() + formatInterlanguageLinks()
+    }
+
+
+    override fun toString(): String {
+        return formatHeader() + formatBody() + formatFooter()
+    }
 }
-
-
-fun <T> List<T>.join(separator: CharSequence, maybePostfix: CharSequence, transform: ((T) -> CharSequence)? = null) =
-    if (this.isEmpty())
-        ""
-    else
-        this.joinToString(separator, transform = transform) + maybePostfix
-
-fun <T> List<T>.joinElements(transform: ((T) -> CharSequence)? = null) = this.join("\n", "\n", transform)
-
-fun <T> List<T>.joinElementSection(transform: ((T) -> CharSequence)? = null) = this.join("\n", "\n\n", transform)
-
-fun <T> List<T>.joinSections(transform: ((T) -> CharSequence)? = null) = this.join("\n\n", "\n\n", transform)
