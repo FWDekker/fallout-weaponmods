@@ -1,12 +1,7 @@
-package com.fwdekker.fallout.weaponmods
+package com.fwdekker.fallout.weaponmods.wiki
 
+import com.fwdekker.fallout.weaponmods.WeaponMod
 
-fun formIDtoTemplate(formID: String): String {
-    return if (formID.dropWhile { it == '0' }.length > 6)
-        "{{DLC ID|${formID.takeLast(6)}}}"
-    else
-        "{{ID|${formID.takeLast(6)}}}"
-}
 
 /**
  * A MediaWiki template.
@@ -50,6 +45,7 @@ open class WikiTemplate(
     }
 }
 
+// TODO document this
 class CraftingTable(
     type: String = "",
     materials: List<Pair<String, Int>>,
@@ -85,6 +81,7 @@ class CraftingTable(
     override fun toString() = super.toString() // This is necessary for some reason
 }
 
+// TODO document this
 class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
     class WeaponModEffectHeader : WikiTemplate("FDekker/TemplateSandbox", listOf("1" to "start"))
 
@@ -111,7 +108,8 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
     override fun toString(): String {
         return "" +
             WeaponModEffectHeader().toString(multiline = false) + "\n" +
-            weaponMods.joinToString("\n") { WeaponModEffectRow(it).toString(multiline = false) } + "\n" +
+            weaponMods.joinToString("\n") { WeaponModEffectRow(
+                it).toString(multiline = false) } + "\n" +
             WeaponModEffectFooter().toString(multiline = false)
     }
 }

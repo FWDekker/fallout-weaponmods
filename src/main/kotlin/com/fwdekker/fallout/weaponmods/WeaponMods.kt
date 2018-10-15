@@ -1,9 +1,40 @@
 package com.fwdekker.fallout.weaponmods
 
+import com.fwdekker.fallout.weaponmods.wiki.Article
+import com.fwdekker.fallout.weaponmods.wiki.Category
+import com.fwdekker.fallout.weaponmods.wiki.CraftingTable
+import com.fwdekker.fallout.weaponmods.wiki.ESM
+import com.fwdekker.fallout.weaponmods.wiki.Model
+import com.fwdekker.fallout.weaponmods.wiki.Perk
+import com.fwdekker.fallout.weaponmods.wiki.Section
+import com.fwdekker.fallout.weaponmods.wiki.Weapon
+import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
+import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
+import com.fwdekker.fallout.weaponmods.xedit.Component
+import com.fwdekker.fallout.weaponmods.xedit.CraftableObject
+import com.fwdekker.fallout.weaponmods.xedit.GameDatabase
+import com.fwdekker.fallout.weaponmods.xedit.LooseMod
+import com.fwdekker.fallout.weaponmods.xedit.ObjectModifier
 import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
 
+
+// TODO document this
+data class FormID(val id: String) : WikiTemplate(
+    // TODO increase readability
+    if (id.dropWhile { it == '0' }.length > 6)
+        "DLC ID"
+    else
+        "ID",
+    listOf("1" to id.takeLast(6))
+) {
+    companion object {
+        fun fromDecimal(decimal: Int): FormID {
+            return FormID(decimal.toString(16))
+        }
+    }
+}
 
 data class WeaponMod(
     val esm: ESM,
@@ -160,7 +191,8 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
     }
 
     private fun createLocation(): Section {
-        return Section("Location", "The $modName can be crafted at any [[weapons workbench]].")
+        return Section("Location",
+            "The $modName can be crafted at any [[weapons workbench]].")
     }
 
 
@@ -176,7 +208,9 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                     createLocation()
                 )
             page.navboxes += WikiTemplate("Navbox weapon mods FO4")
-            page.categories += games.mapNotNull { it.modCategory }.map { Category(it) }
+            page.categories += games.mapNotNull { it.modCategory }.map {
+                Category(it)
+            }
         }
     }
 
