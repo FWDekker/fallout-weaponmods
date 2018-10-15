@@ -9,7 +9,6 @@ import com.fwdekker.fallout.weaponmods.WeaponMod
  * @property template the name of the template
  * @property values the key-value pairs of the template
  */
-// TODO support unnamed arguments
 open class WikiTemplate(
     private val template: String,
     private val values: List<Pair<String, String>> = emptyList()
@@ -32,15 +31,26 @@ open class WikiTemplate(
     fun toString(multiline: Boolean): String {
         val keyWidth = (values.map { it.first.length }.max() ?: 0) + 1
 
+        // TODO remove duplication
         return if (multiline)
             "" +
                 "{{$template\n" +
-                values.joinToString("\n") { "|${it.first.padEnd(keyWidth)}=${it.second}" } + "\n" +
+                values.joinToString("\n") {
+                    if (it.first.toIntOrNull() != null)
+                        "|${it.second}"
+                    else
+                        "|${it.first.padEnd(keyWidth)}=${it.second}"
+                } + "\n" +
                 "}}"
         else
             "" +
                 "{{$template" +
-                values.joinToString("") { "|${it.first}=${it.second}" } +
+                values.joinToString("") {
+                    if (it.first.toIntOrNull() != null)
+                        "|${it.second}"
+                    else
+                        "|${it.first}=${it.second}"
+                } +
                 "}}"
     }
 }
@@ -108,8 +118,10 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
     override fun toString(): String {
         return "" +
             WeaponModEffectHeader().toString(multiline = false) + "\n" +
-            weaponMods.joinToString("\n") { WeaponModEffectRow(
-                it).toString(multiline = false) } + "\n" +
+            weaponMods.joinToString("\n") {
+                WeaponModEffectRow(
+                    it).toString(multiline = false)
+            } + "\n" +
             WeaponModEffectFooter().toString(multiline = false)
     }
 }
