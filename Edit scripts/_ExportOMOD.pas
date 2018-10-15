@@ -19,10 +19,6 @@ var
 
     effects: IwbContainer;
     effect: IwbElement;
-    valueType1: string;
-    valueType2: string;
-    quote1: string;
-    quote2: string;
 begin
     if (CompareText(Signature(e), 'OMOD') <> 0) then
     begin
@@ -57,32 +53,13 @@ begin
     begin
         effect := ElementByIndex(effects, i);
 
-        valueType1 := BeforeComma(GetEditValue(ElementByPath(effect, 'Value Type')));
-        valueType2 := AfterComma(GetEditValue(ElementByPath(effect, 'Value Type')));
-        if (Length(valueType1) = 0) then
-        begin
-            valueType1 := valueType2;
-        end;
-
-        quote1 := '"';
-        if ((CompareText(valueType1, 'Int') = 0) OR (CompareText(valueType1, 'Float') = 0)) then
-        begin
-            quote1 := '';
-        end;
-
-        quote2 := '"';
-        if ((CompareText(valueType2, 'Int') = 0) OR (CompareText(valueType2, 'Float') = 0)) then
-        begin
-            quote2 := '';
-        end;
-
         outputLines.Add('  {');
-        outputLines.Add('    "valueType": "'      + GetEditValue(ElementByPath(effect, 'Value Type'))                       + '",');
-        outputLines.Add('    "functionType": "'   + GetEditValue(ElementByPath(effect, 'Function Type'))                    + '",');
-        outputLines.Add('    "property": "'       + GetEditValue(ElementByPath(effect, 'Property'))                         + '",');
-        outputLines.Add('    "value1": ' + quote1 + GetEditValue(ElementByPath(effect, 'Value 1 - ' + valueType1)) + quote1 + ' ,');
-        outputLines.Add('    "value2": ' + quote2 + GetEditValue(ElementByPath(effect, 'Value 2 - ' + valueType2)) + quote2 + ' ,');
-        outputLines.Add('    "step": '            + GetEditValue(ElementByPath(effect, 'Step'))                             + ' ,');
+        outputLines.Add('    "valueType": "'      + GetEditValue(ElementByPath(effect, 'Value Type'))    + '",');
+        outputLines.Add('    "functionType": "'   + GetEditValue(ElementByPath(effect, 'Function Type')) + '",');
+        outputLines.Add('    "property": "'       + GetEditValue(ElementByPath(effect, 'Property'))      + '",');
+        outputLines.Add('    "value1": '          + GetEffectValue1(effect)                              + ' ,');
+        outputLines.Add('    "value2": '          + GetEffectValue1(effect)                              + ' ,');
+        outputLines.Add('    "step": '            + GetEditValue(ElementByPath(effect, 'Step'))          + ' ,');
         outputLines.Add('  },');
     end;
 
@@ -105,20 +82,45 @@ begin
 end;
 
 
-function BeforeComma(s: string): string;
+function GetEffectValue1(effect: IwbElement): string;
 var
     i: integer;
+    valueType: string;
 begin
-    i := pos(',', s);
-    Result := copy(s, 1, i - 1);
+    valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
+    i := pos(',', valueType);
+    valueType := copy(valueType, 1, i - 1);
+
+    Result := GetEditValue(ElementByPath(effect, 'Value 1 - ' + valueType));
+    Result := FormatEffectValue(Result, valueType);
 end;
 
-function AfterComma(s: string): string;
+function GetEffectValue2(effect: IwbElement): string;
 var
     i: integer;
+    valueType: string;
 begin
-    i := pos(',', s);
-    Result := copy(s, i + 1, Length(s) - i);
+    valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
+    i := pos(',', valueType);
+    valueType := copy(valueType, i + 1, Length(valueType) - i);
+
+    Result := GetEditValue(ElementByPath(effect, 'Value 2 - ' + valueType));
+    Result := FormatEffectValue(Result, valueType);
+end;
+
+function FormatEffectValue(effectValue: string; valueType: string): string;
+begin
+    Result := effectValue;
+
+    if (CompareText(valueType, 'FormID') = 0) then
+    begin
+        Result := NameToEditorID(Result);
+    end;
+
+    if ((CompareText(valueType, 'Int') <> 0) AND (CompareText(valueType, 'Float') <> 0)) then
+    begin
+        Result := '"' + Result + '"';
+    end;
 end;
 
 
