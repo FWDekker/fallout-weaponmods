@@ -130,7 +130,10 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
     }
 
     private fun createEffects(): Section {
-        return Section("Effects", "<!-- Variable --> // TODO")
+        return Section(
+            "Effects",
+            WeaponModEffectTable(weaponMods).toString()
+        )
     }
 
     private fun createProductionTable(mod: WeaponMod): String {

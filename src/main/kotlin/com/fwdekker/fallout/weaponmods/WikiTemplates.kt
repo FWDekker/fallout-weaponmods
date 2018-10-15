@@ -84,3 +84,34 @@ class CraftingTable(
 ) {
     override fun toString() = super.toString() // This is necessary for some reason
 }
+
+class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
+    class WeaponModEffectHeader : WikiTemplate("FDekker/TemplateSandbox", listOf("1" to "start"))
+
+    class WeaponModEffectRow(weaponMod: WeaponMod) : WikiTemplate(
+        "FDekker/TemplateSandbox",
+        listOf(
+            "1" to "row",
+            "weapon" to weaponMod.weapon.name.capitalize(),
+            "desc" to weaponMod.description,
+            "prefix" to weaponMod.prefix,
+            "damage" to "+1",
+            "attack" to "+2",
+            "range" to "+3",
+            "spread" to "+4",
+            "magazine" to "+5",
+            "weight" to "+6",
+            "value" to "+7"
+        )
+    )
+
+    class WeaponModEffectFooter : WikiTemplate("FDekker/TemplateSandbox", listOf("1" to "end"))
+
+
+    override fun toString(): String {
+        return "" +
+            WeaponModEffectHeader().toString(multiline = false) + "\n" +
+            weaponMods.joinToString("\n") { WeaponModEffectRow(it).toString(multiline = false) } + "\n" +
+            WeaponModEffectFooter().toString(multiline = false)
+    }
+}
