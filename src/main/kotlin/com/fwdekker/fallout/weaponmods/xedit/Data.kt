@@ -28,6 +28,9 @@ data class GameDatabase(
                 .fieldConverter(ModelConverter.Annotation::class, ModelConverter())
 
             // TODO throw exceptions
+            val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
+            klaxon = klaxon.fieldConverter(ComponentConverter.Annotation::class, ComponentConverter(components))
+
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
             klaxon = klaxon.fieldConverter(LooseModConverter.Annotation::class, LooseModConverter(looseMods))
 
@@ -36,7 +39,6 @@ data class GameDatabase(
                 ObjectModifierConverter(objectModifiers))
 
             val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
-            val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
             val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
 
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
@@ -119,6 +121,19 @@ class ModelConverter : Converter {
     annotation class Annotation
 }
 
+class ComponentConverter(val components: List<Component>) : Converter {
+    override fun canConvert(cls: Class<*>) = cls == Component::class.java
+
+    override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID == jv.string!! }
+    ?: Component.default // TODO change to null
+
+    override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
 
 /**
  * A component. (CMPO)
@@ -135,7 +150,16 @@ data class Component(
     val formID: FormID,
     val editorID: String,
     val name: String
-)
+) {
+    companion object {
+        val default = Component( // TODO remove this
+            file = ESM.get("Fallout4.esm")!!,
+                formID = FormID("000000"),
+                editorID = "NULL",
+                name = "NULL"
+        )
+    }
+}
 
 /**
  * The weapon mod as seen in the player character's inventory. (MISC)
@@ -250,7 +274,8 @@ data class CraftableObject(
      * @property count the amount of the component required to craft the object
      */
     data class Component(
-        val component: String,
+        @ComponentConverter.Annotation
+        val component: com.fwdekker.fallout.weaponmods.xedit.Component,
         val count: Int
     )
 

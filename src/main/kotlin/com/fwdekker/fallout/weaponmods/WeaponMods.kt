@@ -83,7 +83,7 @@ data class WeaponMod(
             val xEditWeapon = database.weapons.single { it.formID == FormID(weapon!!.baseID) }
 
             val components = craftableObject.components  // TODO fix component capitalisation and links
-                .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
+                .map { Pair(it.component, it.count) }
                 .toMap()
 
             return WeaponMod(
