@@ -4,14 +4,14 @@ package com.fwdekker.fallout.weaponmods
 /**
  * A component. (CMPO)
  *
- * @property file the ESM in which the recipe is defined
- * @property formID the base ID of the recipe as a decimal number
- * @property editorID the editor ID of the recipe
+ * @property file the ESM in which the component is defined
+ * @property formID the base ID of the component
+ * @property editorID the editor ID of the component
  * @property name the name of the component
  */
 data class Component(
     val file: String,
-    val formID: Int,
+    val formID: String,
     val editorID: String,
     val name: String
 )
@@ -19,9 +19,9 @@ data class Component(
 /**
  * The weapon mod as seen in the player character's inventory. (MISC)
  *
- * @property file the ESM in which the recipe is defined
- * @property formID the base ID of the recipe as a decimal number
- * @property editorID the editor ID of the recipe
+ * @property file the ESM in which the weapon mod is defined
+ * @property formID the base ID of the weapon mod
+ * @property editorID the editor ID of the weapon mod
  * @property name the name of the weapon mod
  * @property value the value of the weapon mod in bottle caps
  * @property weight the weight of the weapon mod in pounds
@@ -29,7 +29,7 @@ data class Component(
  */
 data class LooseMod(
     val file: String,
-    val formID: Int,
+    val formID: String,
     val editorID: String,
     val name: String,
     val value: Int,
@@ -40,9 +40,9 @@ data class LooseMod(
 /**
  * The effects of the weapon mod. (OMOD)
  *
- * @property file the ESM in which the recipe is defined
- * @property formID the base ID of the recipe as a decimal number
- * @property editorID the editor ID of the recipe
+ * @property file the ESM in which the weapon mod is defined
+ * @property formID the base ID of the weapon mod
+ * @property editorID the editor ID of the weapon mod
  * @property name the name of the weapon mod
  * @property description the effects of the weapon mod
  * @property looseMod the editor ID of the corresponding [LooseMod]
@@ -50,7 +50,7 @@ data class LooseMod(
  */
 data class ObjectModifier(
     val file: String,
-    val formID: Int,
+    val formID: String,
     val editorID: String,
     val name: String,
     val description: String,
@@ -72,7 +72,7 @@ data class ObjectModifier(
  * The recipe for the weapon mod. (COBJ)
  *
  * @property file the ESM in which the recipe is defined
- * @property formID the base ID of the recipe as a decimal number
+ * @property formID the base ID of the recipe
  * @property editorID the editor ID of the recipe
  * @property createdMod the editor ID of the [ObjectModifier] that is created by this recipe
  * @property components the components required to use this recipe
@@ -80,7 +80,7 @@ data class ObjectModifier(
  */
 data class CraftableObject(
     val file: String,
-    val formID: Int,
+    val formID: String,
     val editorID: String,
     val createdMod: String,
     val components: List<CraftableObject.Component>,
@@ -126,7 +126,7 @@ data class CraftableObject(
  * A weapon. (WEAP)
  *
  * @property file the ESM in which the weapon is defined
- * @property formID the base ID of the weapon as a decimal number
+ * @property formID the base ID of the weapon
  * @property editorID the editor ID of the weapon
  * @property name the name of the weapon
  * @property speed the speed at which the weapon fires
@@ -141,7 +141,7 @@ data class CraftableObject(
 data class XWeapon(
     // TODO rename this without conflicting with the wiki weapon
     val file: String,
-    val formID: Int,
+    val formID: String,
     val editorID: String,
     val name: String,
     val speed: Float,

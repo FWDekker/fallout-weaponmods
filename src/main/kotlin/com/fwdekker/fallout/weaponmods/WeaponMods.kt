@@ -7,7 +7,7 @@ import kotlin.system.exitProcess
 
 data class WeaponMod(
     val esm: ESM,
-    val formIDTemplate: String, // TODO rename to something more sensible (use a class?)
+    val formID: FormID,
     val name: String,
     val prefix: String,
     val weapon: Weapon,
@@ -60,14 +60,13 @@ data class WeaponMod(
             val weapon = Weapon.get(objectModifier.weaponName)
             require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
 
-            val formIDTemplate = formIDtoTemplate(looseMod.formID.toString(16))
             val components = craftableObject.components  // TODO fix component capitalisation and links
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
                 .toMap()
 
             return WeaponMod(
                 esm = esm!!,
-                formIDTemplate = formIDTemplate,
+                formID = FormID(looseMod.formID),
                 name = looseMod.name,
                 prefix = objectModifier.name,
                 weapon = weapon!!,
@@ -124,7 +123,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "modifies" to weaponMods.joinToString("<br />") { it.weapon.link.toString(capitalize = true) },
                 "value" to namedAggregation { it.value.toString() },
                 "weight" to namedAggregation { it.weight.toString() },
-                "baseid" to namedAggregation { it.formIDTemplate }
+                "baseid" to namedAggregation { it.formID.toString(multiline = false) }
             )
         )
     }

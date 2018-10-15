@@ -27,7 +27,7 @@ begin
 
     outputLines.Add('{');
     outputLines.Add('  "file": "'     + GetFileName(GetFile(e))                                                               + '",');
-    outputLines.Add('  "formID": '    + IntToStr(FormID(e))                                                                   +  ',');
+    outputLines.Add('  "formID": "'   + IntToHex(FormID(e), 8)                                                                + '",');
     outputLines.Add('  "editorID": "' + GetEditValue(ElementBySignature(e, 'EDID'))                                           + '",');
     outputLines.Add('  "name": "'     + EscapeJsonString(GetEditValue(ElementBySignature(e, 'FULL')))                         + '",');
     outputLines.Add('  "model": "'    + EscapeJsonString(GetEditValue(ElementBySignature(ElementByPath(e, 'Model'), 'MODL'))) + '",');
