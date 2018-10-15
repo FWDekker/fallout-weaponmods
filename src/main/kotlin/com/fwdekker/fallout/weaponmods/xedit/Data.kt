@@ -19,20 +19,22 @@ data class GameDatabase(
 ) {
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
+            var klaxon = Klaxon()
+                .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
+                .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
+
             // TODO throw exceptions
-            val looseMods = parseFile<LooseMod>(File(directory, "misc.json"))!!
-            val objectModifiers = parseFile<ObjectModifier>(File(directory, "omod.json"))!!
-            val craftableObjects = parseFile<CraftableObject>(File(directory, "cobj.json"))!!
-            val components = parseFile<Component>(File(directory, "cmpo.json"))!!
-            val weapons = parseFile<Weapon>(File(directory, "weap.json"))!!
+            val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
+            klaxon = klaxon.fieldConverter(LooseModConverter.Annotation::class, LooseModConverter(looseMods))
+
+            val objectModifiers = klaxon.parseArray<ObjectModifier>(File(directory, "omod.json").inputStream())!!
+            val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
+            val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
+            val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
 
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
 
-        private inline fun <reified T> parseFile(file: File) = Klaxon()
-            .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
-            .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
-            .parseArray<T>(file.inputStream())
     }
 }
 
@@ -55,6 +57,18 @@ class ESMConverter : Converter {
     override fun fromJson(jv: JsonValue) = ESM.get(jv.string!!)!!
 
     override fun toJson(value: Any) = "\"${(value as ESM).fileName}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
+class LooseModConverter(val looseMods: List<LooseMod>) : Converter {
+    override fun canConvert(cls: Class<*>) = cls == LooseMod::class.java
+
+    override fun fromJson(jv: JsonValue) = looseMods.single { it.editorID == jv.string }
+
+    override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
 
 
     @Target(AnnotationTarget.FIELD)
@@ -121,7 +135,8 @@ data class ObjectModifier(
     val editorID: String,
     val name: String,
     val description: String,
-    val looseMod: String,
+    @LooseModConverter.Annotation
+    val looseMod: LooseMod,
     val weaponName: String,
     val effects: List<Effect>
 ) {

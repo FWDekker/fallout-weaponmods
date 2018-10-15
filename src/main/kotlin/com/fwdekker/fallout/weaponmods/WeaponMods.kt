@@ -53,7 +53,7 @@ data class WeaponMod(
 ) {
     companion object : KLogging() {
         fun fromLooseMod(looseMod: LooseMod, database: GameDatabase): WeaponMod? {
-            val objectModifier = database.objectModifiers.singleOrNull { it.looseMod == looseMod.editorID }
+            val objectModifier = database.objectModifiers.singleOrNull { it.looseMod == looseMod }
             if (objectModifier == null) {
                 logger.warn { "Could not create weapon mod with omod `${looseMod.editorID}`." }
                 return null
