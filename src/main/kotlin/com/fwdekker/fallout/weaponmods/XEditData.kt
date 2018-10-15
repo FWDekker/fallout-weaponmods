@@ -121,3 +121,35 @@ data class CraftableObject(
         val comparison: String
     )
 }
+
+/**
+ * A weapon. (WEAP)
+ *
+ * @property file the ESM in which the weapon is defined
+ * @property formID the base ID of the weapon as a decimal number
+ * @property editorID the editor ID of the weapon
+ * @property name the name of the weapon
+ * @property speed the speed at which the weapon fires
+ * @property reloadSpeed the speed at which the weapon reloads
+ * @property reach the reach of the weapon
+ * @property minRange the minimum range of the weapon
+ * @property maxRange the maximum range of the weapon
+ * @property attackDelay the number of seconds in between consecutive uses of the weapon
+ * @property weight the weight of the weapon in pounds
+ * @property value the value of the weapon in bottle caps
+ */
+data class XWeapon(
+    val file: String,
+    val formID: Int,
+    val editorID: String,
+    val name: String,
+    val speed: Float,
+    val reloadSpeed: Float,
+    val reach: Float,
+    val minRange: Float,
+    val maxRange: Float,
+    val attackDelay: Float,
+    val weight: Float,
+    val value: Int,
+    val baseDamage: Int
+)
