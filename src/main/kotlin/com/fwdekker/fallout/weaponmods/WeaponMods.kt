@@ -33,20 +33,10 @@ data class FormID(val id: String) : WikiTemplate(
 }
 
 data class WeaponMod(
-    // TODO clean up this awful mess
-    val esm: ESM,
-    val formID: FormID,
-    val name: String,
-    val prefix: String,
-    val weapon: WikiWeapon,
-    val weaponData: XEditWeapon,
-    val description: String,
-    val components: List<CraftableObject.Component>,
-    val requirements: List<CraftableObject.Condition>,
-    val effects: List<ObjectModifier.Effect>,
-    val value: Int,
-    val weight: Double,
-    val image: String
+    val item: LooseMod,
+    val effects: ObjectModifier,
+    val recipe: CraftableObject,
+    val weaponData: com.fwdekker.fallout.weaponmods.xedit.Weapon
 ) {
     companion object : KLogging() {
         fun fromLooseMod(looseMod: LooseMod, database: GameDatabase): WeaponMod? {
@@ -73,25 +63,13 @@ data class WeaponMod(
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
-            val perks = craftableObject.conditions
-
-            // TODO initialise FormID objects during construction
             val xEditWeapon = database.weapons.single { it.formID == FormID(objectModifier.weapon.baseID) }
 
             return WeaponMod(
-                esm = looseMod.file,
-                formID = looseMod.formID,
-                name = looseMod.name,
-                prefix = objectModifier.name,
-                weapon = objectModifier.weapon,
-                weaponData = xEditWeapon,
-                description = objectModifier.description,
-                components = craftableObject.components,
-                requirements = perks,
-                effects = objectModifier.effects,
-                value = looseMod.value,
-                weight = looseMod.weight,
-                image = looseMod.model.image
+                looseMod,
+                objectModifier,
+                craftableObject,
+                xEditWeapon
             )
         }
     }
@@ -99,12 +77,12 @@ data class WeaponMod(
 
 class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
     private val image = weaponMods
-        .groupingBy { it.image }
+        .groupingBy { it.item.model.image }
         .eachCount().entries
         .maxBy { it.value }?.key
         ?: "" // TODO log empty image
     private val games = weaponMods
-        .map { it.esm }
+        .map { it.item.file }
         .distinct()
         .toList()
         .sortedBy { it.name }
@@ -136,10 +114,10 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.weapon.link.toString(capitalize = true) },
-                "value" to namedAggregation { it.value.toString() },
-                "weight" to namedAggregation { it.weight.toString() },
-                "baseid" to namedAggregation { it.formID.toString(multiline = false) }
+                "modifies" to weaponMods.joinToString("<br />") { it.effects.weapon.link.toString(capitalize = true) },
+                "value" to namedAggregation { it.item.value.toString() },
+                "weight" to namedAggregation { it.item.weight.toString() },
+                "baseid" to namedAggregation { it.item.formID.toString(multiline = false) }
             )
         )
     }
@@ -153,9 +131,9 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private fun createProductionTable(mod: WeaponMod): String {
         return CraftingTable(
-            materials = mod.components.map { it.component.name to it.count },
+            materials = mod.recipe.components.map { it.component.name to it.count },
             workspace = "[[Weapons workbench]]",
-            perks = mod.requirements.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
+            perks = mod.recipe.conditions.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
         ).toString()
     }
@@ -168,7 +146,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "",
                 subsections = weaponMods.map { weaponMod ->
                     Section(
-                        weaponMod.weapon.link.toString(capitalize = true),
+                        weaponMod.effects.weapon.link.toString(capitalize = true),
                         createProductionTable(weaponMod),
                         level = 3
                     )
@@ -205,7 +183,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return if (weaponMods.map(property).distinct().size == 1)
             property(weaponMods[0]) // TODO check if empty
         else
-            weaponMods.joinToString("<br />") { "${property(it)} (${it.weapon.name})" }
+            weaponMods.joinToString("<br />") { "${property(it)} (${it.effects.weapon.name})" }
     }
 }
 
@@ -236,7 +214,7 @@ private fun launch(database: GameDatabase, modName: String) {
         .toList()
     val weaponMods = looseMods
         .mapNotNull { WeaponMod.fromLooseMod(it, database) }
-        .sortedBy { it.weapon.name }
+        .sortedBy { it.effects.weapon.name }
         .toList()
     if (weaponMods.isEmpty()) {
         logger.warn { "No weapon mods by the name `$modName` were found." }

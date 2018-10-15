@@ -99,16 +99,16 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
         "FDekker/TemplateSandbox",
         listOf(
             "1" to "row",
-            "weapon" to weaponMod.weapon.name.capitalize(),
-            "desc" to weaponMod.description,
-            "prefix" to weaponMod.prefix,
+            "weapon" to weaponMod.effects.weapon.name.capitalize(),
+            "desc" to weaponMod.effects.description,
+            "prefix" to weaponMod.effects.name,
             "damage" to "+1",
             "attack" to "+2",
             "range" to "+3",
             "spread" to "+4",
             "magazine" to "+5",
             "weight" to "+6",
-            "value" to weaponMod.effects
+            "value" to weaponMod.effects.effects
                 .filter { it.property == "Value" }
                 .map { (it.value1 as Double) * weaponMod.weaponData.value }
                 .map { it.toInt() /* truncates */ }
