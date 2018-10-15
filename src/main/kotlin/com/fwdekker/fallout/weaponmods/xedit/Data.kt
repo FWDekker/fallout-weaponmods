@@ -4,6 +4,7 @@ import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
+import com.fwdekker.fallout.weaponmods.wiki.ESM
 import mu.KLogging
 import java.io.File
 
@@ -18,29 +19,23 @@ data class GameDatabase(
 ) {
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
-            val looseMods = parseFile<LooseMod>(File(directory, "misc.json"))
-                ?: return null // TODO throw exception here
-            val objectModifiers = parseFile<ObjectModifier>(File(directory, "omod.json"))
-                ?: return null
-            val craftableObjects = parseFile<CraftableObject>(File(directory, "cobj.json"))
-                ?: return null
-            val components = parseFile<Component>(File(directory, "cmpo.json"))
-                ?: return null
-            val weapons = parseFile<Weapon>(File(directory, "weap.json"))
-                ?: return null
+            // TODO throw exceptions
+            val looseMods = parseFile<LooseMod>(File(directory, "misc.json"))!!
+            val objectModifiers = parseFile<ObjectModifier>(File(directory, "omod.json"))!!
+            val craftableObjects = parseFile<CraftableObject>(File(directory, "cobj.json"))!!
+            val components = parseFile<Component>(File(directory, "cmpo.json"))!!
+            val weapons = parseFile<Weapon>(File(directory, "weap.json"))!!
 
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
 
         private inline fun <reified T> parseFile(file: File) = Klaxon()
-            .fieldConverter(FormIDField::class, FormIDConverter())
+            .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
+            .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
             .parseArray<T>(file.inputStream())
     }
 }
 
-
-@Target(AnnotationTarget.FIELD)
-annotation class FormIDField
 
 class FormIDConverter : Converter {
     override fun canConvert(cls: Class<*>) = cls == FormID::class.java
@@ -48,6 +43,22 @@ class FormIDConverter : Converter {
     override fun fromJson(jv: JsonValue) = FormID(jv.string!!)
 
     override fun toJson(value: Any) = "\"${(value as FormID).id}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
+class ESMConverter : Converter {
+    override fun canConvert(cls: Class<*>) = cls == ESM::class.java
+
+    override fun fromJson(jv: JsonValue) = ESM.get(jv.string!!)!!
+
+    override fun toJson(value: Any) = "\"${(value as ESM).fileName}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
 }
 
 
@@ -60,8 +71,9 @@ class FormIDConverter : Converter {
  * @property name the name of the component
  */
 data class Component(
-    val file: String,
-    @FormIDField
+    @ESMConverter.Annotation
+    val file: ESM,
+    @FormIDConverter.Annotation
     val formID: FormID,
     val editorID: String,
     val name: String
@@ -79,8 +91,10 @@ data class Component(
  * @property model the path to the in-game model file for the weapon mod
  */
 data class LooseMod(
-    val file: String,
-    val formID: String,
+    @ESMConverter.Annotation
+    val file: ESM,
+    @FormIDConverter.Annotation
+    val formID: FormID,
     val editorID: String,
     val name: String,
     val value: Int,
@@ -100,8 +114,9 @@ data class LooseMod(
  * @property weaponName the keyword of the weapon to which the effects can be applied
  */
 data class ObjectModifier(
-    val file: String,
-    @FormIDField
+    @ESMConverter.Annotation
+    val file: ESM,
+    @FormIDConverter.Annotation
     val formID: FormID,
     val editorID: String,
     val name: String,
@@ -131,8 +146,9 @@ data class ObjectModifier(
  * @property conditions the requirements (e.g. perks) to use this recipe
  */
 data class CraftableObject(
-    val file: String,
-    @FormIDField
+    @ESMConverter.Annotation
+    val file: ESM,
+    @FormIDConverter.Annotation
     val formID: FormID,
     val editorID: String,
     val createdMod: String,
@@ -142,7 +158,7 @@ data class CraftableObject(
     /**
      * A component that is required to craft the object.
      *
-     * @property components the component required to craft the object
+     * @property component the editor ID of the component required to craft the object
      * @property count the amount of the component required to craft the object
      */
     data class Component(
@@ -192,8 +208,9 @@ data class CraftableObject(
  * @property value the value of the weapon in bottle caps
  */
 data class Weapon(
-    val file: String,
-    @FormIDField
+    @ESMConverter.Annotation
+    val file: ESM,
+    @FormIDConverter.Annotation
     val formID: FormID,
     val editorID: String,
     val name: String,

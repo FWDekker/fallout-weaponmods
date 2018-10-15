@@ -76,9 +76,6 @@ data class WeaponMod(
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
-            val esm = ESM.get(looseMod.file)
-            require(esm != null) { "Could not find ESM `${looseMod.file}`." }
-
             val model = Model.get(looseMod.model)
             require(model != null) { "Could not find model `${looseMod.model}`." }
 
@@ -101,8 +98,8 @@ data class WeaponMod(
                 .toMap()
 
             return WeaponMod(
-                esm = esm!!,
-                formID = FormID(looseMod.formID),
+                esm = looseMod.file,
+                formID = looseMod.formID,
                 name = looseMod.name,
                 prefix = objectModifier.name,
                 weapon = weapon!!,
