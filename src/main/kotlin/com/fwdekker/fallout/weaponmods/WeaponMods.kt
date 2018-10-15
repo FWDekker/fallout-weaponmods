@@ -27,7 +27,7 @@ data class FormID(val id: String) : WikiTemplate(
         "DLC ID"
     else
         "ID",
-    listOf("1" to id.takeLast(6))
+    listOf("1" to id.takeLast(6).toLowerCase())
 ) {
     companion object {
         fun fromDecimal(decimal: Int): FormID {
