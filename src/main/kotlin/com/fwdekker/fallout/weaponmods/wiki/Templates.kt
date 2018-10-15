@@ -108,7 +108,14 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
             "spread" to "+4",
             "magazine" to "+5",
             "weight" to "+6",
-            "value" to "+7"
+            "value" to weaponMod.effects
+                .filter { it.property == "Value" }
+                .map { (it.value1 as Double) * weaponMod.weaponData.value }
+                .map { it.toInt() /* truncates */ }
+                .sum().let {
+                    if (it > 0) "+$it"
+                    else "$it"
+                }
         )
     )
 

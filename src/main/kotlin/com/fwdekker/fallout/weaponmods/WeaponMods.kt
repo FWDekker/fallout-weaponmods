@@ -36,6 +36,7 @@ data class FormID(val id: String) : WikiTemplate(
 }
 
 data class WeaponMod(
+    // TODO clean up this awful mess
     val esm: ESM,
     val formID: FormID,
     val name: String,
@@ -45,6 +46,7 @@ data class WeaponMod(
     val description: String,
     val components: Map<Component, Int>,
     val perkRequirements: Map<Perk, Int>,
+    val effects: List<ObjectModifier.Effect>,
     val value: Int,
     val weight: Double,
     val image: String
@@ -108,6 +110,7 @@ data class WeaponMod(
                 description = objectModifier.description,
                 components = components,
                 perkRequirements = perks,
+                effects = objectModifier.effects,
                 value = looseMod.value,
                 weight = looseMod.weight,
                 image = model!!.image
