@@ -7,7 +7,6 @@ import com.fwdekker.fallout.weaponmods.wiki.ESM
 import com.fwdekker.fallout.weaponmods.wiki.Model
 import com.fwdekker.fallout.weaponmods.wiki.Perk
 import com.fwdekker.fallout.weaponmods.wiki.Section
-import com.fwdekker.fallout.weaponmods.wiki.Weapon
 import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
 import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
 import com.fwdekker.fallout.weaponmods.xedit.Component
@@ -18,6 +17,8 @@ import com.fwdekker.fallout.weaponmods.xedit.ObjectModifier
 import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
+import com.fwdekker.fallout.weaponmods.wiki.Weapon as WikiWeapon
+import com.fwdekker.fallout.weaponmods.xedit.Weapon as XEditWeapon
 
 
 // TODO document this
@@ -29,10 +30,8 @@ data class FormID(val id: String) : WikiTemplate(
         "ID",
     listOf("1" to id.takeLast(6).toLowerCase())
 ) {
-    companion object {
-        fun fromDecimal(decimal: Int): FormID {
-            return FormID(decimal.toString(16))
-        }
+    override fun equals(other: Any?): Boolean {
+        return other is FormID && this.id.takeLast(6).toLowerCase() == other.id.takeLast(6).toLowerCase()
     }
 }
 
@@ -41,7 +40,8 @@ data class WeaponMod(
     val formID: FormID,
     val name: String,
     val prefix: String,
-    val weapon: Weapon,
+    val weapon: WikiWeapon,
+    val weaponData: XEditWeapon,
     val description: String,
     val components: Map<Component, Int>,
     val perkRequirements: Map<Perk, Int>,
@@ -88,8 +88,11 @@ data class WeaponMod(
                 }
                 .toMap()
 
-            val weapon = Weapon.get(objectModifier.weaponName)
+            val weapon = WikiWeapon.get(objectModifier.weaponName)
             require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
+
+            // TODO initialise FormID objects during construction
+            val xEditWeapon = database.weapons.single { FormID(it.formID) == FormID(weapon!!.baseID) }
 
             val components = craftableObject.components  // TODO fix component capitalisation and links
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
@@ -101,6 +104,7 @@ data class WeaponMod(
                 name = looseMod.name,
                 prefix = objectModifier.name,
                 weapon = weapon!!,
+                weaponData = xEditWeapon,
                 description = objectModifier.description,
                 components = components,
                 perkRequirements = perks,
