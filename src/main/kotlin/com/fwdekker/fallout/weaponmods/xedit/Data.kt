@@ -1,6 +1,9 @@
 package com.fwdekker.fallout.weaponmods.xedit
 
+import com.beust.klaxon.Converter
+import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
+import com.fwdekker.fallout.weaponmods.FormID
 import mu.KLogging
 import java.io.File
 
@@ -16,7 +19,7 @@ data class GameDatabase(
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
             val looseMods = parseFile<LooseMod>(File(directory, "misc.json"))
-                ?: return null
+                ?: return null // TODO throw exception here
             val objectModifiers = parseFile<ObjectModifier>(File(directory, "omod.json"))
                 ?: return null
             val craftableObjects = parseFile<CraftableObject>(File(directory, "cobj.json"))
@@ -29,8 +32,22 @@ data class GameDatabase(
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
 
-        private inline fun <reified T> parseFile(file: File) = Klaxon().parseArray<T>(file.inputStream())
+        private inline fun <reified T> parseFile(file: File) = Klaxon()
+            .fieldConverter(FormIDField::class, FormIDConverter())
+            .parseArray<T>(file.inputStream())
     }
+}
+
+
+@Target(AnnotationTarget.FIELD)
+annotation class FormIDField
+
+class FormIDConverter : Converter {
+    override fun canConvert(cls: Class<*>) = cls == FormID::class.java
+
+    override fun fromJson(jv: JsonValue) = FormID(jv.string!!)
+
+    override fun toJson(value: Any) = "\"${(value as FormID).id}\""
 }
 
 
@@ -44,7 +61,8 @@ data class GameDatabase(
  */
 data class Component(
     val file: String,
-    val formID: String,
+    @FormIDField
+    val formID: FormID,
     val editorID: String,
     val name: String
 )
@@ -83,7 +101,8 @@ data class LooseMod(
  */
 data class ObjectModifier(
     val file: String,
-    val formID: String,
+    @FormIDField
+    val formID: FormID,
     val editorID: String,
     val name: String,
     val description: String,
@@ -113,7 +132,8 @@ data class ObjectModifier(
  */
 data class CraftableObject(
     val file: String,
-    val formID: String,
+    @FormIDField
+    val formID: FormID,
     val editorID: String,
     val createdMod: String,
     val components: List<Component>,
@@ -172,9 +192,9 @@ data class CraftableObject(
  * @property value the value of the weapon in bottle caps
  */
 data class Weapon(
-    // TODO rename this without conflicting with the wiki weapon
     val file: String,
-    val formID: String,
+    @FormIDField
+    val formID: FormID,
     val editorID: String,
     val name: String,
     val speed: Float,

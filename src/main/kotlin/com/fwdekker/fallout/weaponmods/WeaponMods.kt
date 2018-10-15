@@ -94,7 +94,7 @@ data class WeaponMod(
             require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
 
             // TODO initialise FormID objects during construction
-            val xEditWeapon = database.weapons.single { FormID(it.formID) == FormID(weapon!!.baseID) }
+            val xEditWeapon = database.weapons.single { it.formID == FormID(weapon!!.baseID) }
 
             val components = craftableObject.components  // TODO fix component capitalisation and links
                 .map { Pair(database.components.single { c -> c.editorID == it.component }, it.count) }
