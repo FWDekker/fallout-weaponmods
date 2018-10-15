@@ -14,14 +14,11 @@ fun formIDtoTemplate(formID: String): String {
  * @property template the name of the template
  * @property values the key-value pairs of the template
  */
+// TODO support unnamed arguments
 open class WikiTemplate(
     private val template: String,
     private val values: List<Pair<String, String>> = emptyList()
 ) {
-    // TODO support unnamed arguments
-    private val keyWidth: Int = (values.map { it.first.length }.max() ?: 0) + 1
-
-
     /**
      * Formats the template as a multiline string.
      *
@@ -38,21 +35,27 @@ open class WikiTemplate(
      * @return the template as a string
      */
     fun toString(multiline: Boolean): String {
-        val newline = if (multiline) "\n" else ""
+        val keyWidth = (values.map { it.first.length }.max() ?: 0) + 1
 
-        return "" +
-            "{{$template$newline" +
-            values.joinToString(newline) { "|" + it.first.padEnd(keyWidth) + "=" + it.second } + newline +
-            "}}"
+        return if (multiline)
+            "" +
+                "{{$template\n" +
+                values.joinToString("\n") { "|${it.first.padEnd(keyWidth)}=${it.second}" } + "\n" +
+                "}}"
+        else
+            "" +
+                "{{$template" +
+                values.joinToString("") { "|${it.first}=${it.second}" } +
+                "}}"
     }
 }
 
-data class CraftingTable(
-    val type: String = "",
-    val materials: List<Pair<String, Int>>,
-    val workspace: String,
-    val perks: List<Pair<String, Int>>,
-    val products: List<Pair<String, Int>>
+class CraftingTable(
+    type: String = "",
+    materials: List<Pair<String, Int>>,
+    workspace: String,
+    perks: List<Pair<String, Int>>,
+    products: List<Pair<String, Int>>
 ) : WikiTemplate(
     // TODO clean up these parameters
     "Crafting table",
