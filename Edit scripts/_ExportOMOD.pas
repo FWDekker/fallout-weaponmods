@@ -30,6 +30,17 @@ begin
         exit;
     end;
 
+    if (CompareText(GetEditValue(ElementByPath(ElementBySignature(e, 'DATA'), 'Form Type')), 'Weapon') <> 0) then
+    begin
+        exit;
+    end;
+
+    if (Length(NameToEditorID(GetEditValue(ElementBySignature(e, 'LNAM')))) = 0) then
+    begin
+        exit;
+    end;
+
+
 
     // Init
     outputLines.Add('{');
