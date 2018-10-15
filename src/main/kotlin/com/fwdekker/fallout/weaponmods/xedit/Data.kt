@@ -28,6 +28,9 @@ data class GameDatabase(
             klaxon = klaxon.fieldConverter(LooseModConverter.Annotation::class, LooseModConverter(looseMods))
 
             val objectModifiers = klaxon.parseArray<ObjectModifier>(File(directory, "omod.json").inputStream())!!
+            klaxon = klaxon.fieldConverter(ObjectModifierConverter.Annotation::class,
+                ObjectModifierConverter(objectModifiers))
+
             val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
             val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
@@ -66,9 +69,23 @@ class ESMConverter : Converter {
 class LooseModConverter(val looseMods: List<LooseMod>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == LooseMod::class.java
 
-    override fun fromJson(jv: JsonValue) = looseMods.single { it.editorID == jv.string }
+    override fun fromJson(jv: JsonValue) = looseMods.singleOrNull { it.editorID == jv.string }
+        ?: LooseMod.default // TODO return null
 
     override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
+class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Converter {
+    override fun canConvert(cls: Class<*>) = cls == ObjectModifier::class.java
+
+    override fun fromJson(jv: JsonValue) = objectModifiers.singleOrNull { it.editorID == jv.string }
+        ?: ObjectModifier.default // TODO return null instead
+
+    override fun toJson(value: Any) = "\"${(value as ObjectModifier).editorID}\""
 
 
     @Target(AnnotationTarget.FIELD)
@@ -114,7 +131,19 @@ data class LooseMod(
     val value: Int,
     val weight: Double,
     val model: String
-)
+) {
+    companion object {
+        val default = LooseMod(
+            file = ESM.get("Fallout4.esm")!!, // TODO catch
+            formID = FormID("000000"),
+            editorID = "NULL",
+            name = "NULL",
+            value = 0,
+            weight = 0.0,
+            model = "NULL"
+        )
+    }
+}
 
 /**
  * The effects of the weapon mod. (OMOD)
@@ -148,6 +177,20 @@ data class ObjectModifier(
         val value2: Any,
         val step: Float
     )
+
+
+    companion object {
+        val default = ObjectModifier(
+            file = ESM.get("Fallout4.esm")!!, // TODO catch
+            formID = FormID("000000"),
+            editorID = "NULL",
+            name = "NULL",
+            description = "NULL",
+            looseMod = LooseMod.default,
+            weaponName = "NULL",
+            effects = emptyList()
+        )
+    }
 }
 
 /**
@@ -166,7 +209,8 @@ data class CraftableObject(
     @FormIDConverter.Annotation
     val formID: FormID,
     val editorID: String,
-    val createdMod: String,
+    @ObjectModifierConverter.Annotation
+    val createdMod: ObjectModifier,
     val components: List<Component>,
     val conditions: List<Condition>
 ) {

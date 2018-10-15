@@ -59,7 +59,7 @@ data class WeaponMod(
                 return null
             }
 
-            val craftableObject = database.craftableObjects.singleOrNull { it.createdMod == objectModifier.editorID }
+            val craftableObject = database.craftableObjects.singleOrNull { it.createdMod == objectModifier }
             if (craftableObject == null) {
                 logger.warn { "Could not create weapon mod with cobj `${objectModifier.editorID}`." }
                 return null
