@@ -71,6 +71,7 @@ data class ESM(
 data class Weapon(
     val file: String,
     val keyword: String,
+    val baseID: String,
     val name: String,
     val page: String
 ) {

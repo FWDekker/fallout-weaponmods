@@ -2,342 +2,402 @@
   {
     "file": "Fallout4.esm",
     "keyword": "ma_10mm",
+    "baseID": "004822",
     "name": "10mm pistol",
     "page": "10mm pistol (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_44",
+    "baseID": "0ce97d",
     "name": ".44 pistol",
     "page": ".44 pistol"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_AlienBlaster",
+    "baseID": "0ff995",
     "name": "alien blaster pistol",
     "page": "Alien blaster pistol"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_AssaultRifle",
+    "baseID": "00463f",
     "name": "assault rifle",
     "page": "Assault rifle (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_BaseballBat",
+    "baseID": "08e736",
     "name": "baseball bat",
     "page": "Baseball bat (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Baton",
+    "baseID": "08c14d",
     "name": "baton",
-    "page": "baton"
+    "page": "Baton"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_BoxingGlove",
+    "baseID": "16498f",
     "name": "boxing glove",
     "page": "Boxing glove (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Broadsider",
+    "baseID": "188a6e",
     "name": "Broadsider",
     "page": "Broadsider"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_ChineseOfficerSword",
+    "baseID": "147be4",
     "name": "Chinese officer sword",
     "page": "Chinese officer sword"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_CombatGun",
+    "baseID": "14831c",
     "name": "combat shotgun",
     "page": "Combat shotgun (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_CombatRifle",
+    "baseID": "0df42e",
     "name": "combat rifle",
     "page": "Combat rifle"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Cryolator",
+    "baseID": "171b2b",
     "name": "Cryolator",
     "page": "Cryolator"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_DeathclawGauntlet",
+    "baseID": "0d8576",
     "name": "deathclaw gauntlet",
     "page": "Deathclaw gauntlet (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Deliverer",
+    "baseID": "0dc8e7",
     "name": "Deliverer",
     "page": "Deliverer"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_DoubleBarrelShotgun",
+    "baseID": "092217",
     "name": "double-barrel shotgun",
     "page": "Double-barrel shotgun (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_FatMan",
+    "baseID": "0bd56f",
     "name": "Fat Man",
     "page": "Fat Man (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Flamer",
+    "baseID": "0e5881",
     "name": "flamer",
     "page": "Flamer (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_GammaGun",
+    "baseID": "0ddb7c",
     "name": "gamma gun",
     "page": "Gamma gun"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_GatlingLaser",
+    "baseID": "0e27bc",
     "name": "Gatling laser",
     "page": "Gatling laser (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_GaussRifle",
+    "baseID": "0d1eb0",
     "name": "Gauss rifle",
     "page": "Gauss rifle (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_InstituteLaserGun",
+    "baseID": "1633cc",
     "name": "Institute laser gun",
     "page": "Institute laser gun"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_JunkJet",
+    "baseID": "0e942b",
     "name": "Junk Jet",
     "page": "Junk Jet"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Knife",
+    "baseID": "0913ca",
     "name": "combat knife",
     "page": "Combat knife (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_LaserGun",
+    "baseID": "09983b",
     "name": "laser gun",
     "page": "Laser gun"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_LaserMusket",
+    "baseID": "01dacf",
     "name": "laser musket",
     "page": "Laser musket"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_LeadPipe",
+    "baseID": "0fc9c3",
     "name": "lead pipe",
     "page": "Lead pipe (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_HuntingRifle",
+    "baseID": "04f46a",
     "name": "hunting rifle",
     "page": "Hunting rifle (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Machete",
+    "baseID": "033fe0",
     "name": "machete",
     "page": "Machete (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Minigun",
+    "baseID": "01f669",
     "name": "minigun",
     "page": "Minigun (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_MissileLauncher",
+    "baseID": "03f6f8",
     "name": "missile launcher",
     "page": "Missile launcher (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_PipeBoltAction",
+    "baseID": "14831a",
     "name": "pipe bolt-action",
     "page": "Pipe bolt-action"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_PipeGun",
+    "baseID": "024f55",
     "name": "pipe gun",
     "page": "Pipe gun"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_PipeRevolver",
+    "baseID": "14831b",
     "name": "pipe revolver",
     "page": "Pipe revolver"
   },
   {
     "file": "Fallout4.esm",
-    "keyword": "ma_PipeSyringer",
-    "name": "Syringer",
-    "page": "Syringer"
-  },
-  {
-    "file": "Fallout4.esm",
     "keyword": "ma_PipeWrench",
+    "baseID": "0d83bf",
     "name": "pipe wrench",
     "page": "Pipe wrench (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_PoolCue",
+    "baseID": "0fa3e8",
     "name": "pool cue",
     "page": "Pool cue (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_PlasmaGun",
+    "baseID": "100ae9",
     "name": "plasma gun",
     "page": "Plasma gun"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_RailwayRifle",
+    "baseID": "0fe268",
     "name": "railway rifle",
     "page": "Railway rifle (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_RevolutionarySword",
+    "baseID": "143ab5",
     "name": "revolutionary sword",
     "page": "Revolutionary sword"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Ripper",
+    "baseID": "0fa2f6",
     "name": "ripper",
     "page": "Ripper (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_RollingPin",
+    "baseID": "142fab",
     "name": "rolling pin",
     "page": "Rolling pin (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_Sledgehammer",
+    "baseID": "0e7ab9",
     "name": "sledgehammer",
     "page": "Sledgehammer (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_SubmachineGun",
+    "baseID": "15b043",
     "name": "submachine gun",
     "page": "Submachine gun (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_SuperSledge",
+    "baseID": "0ff964",
     "name": "super sledge",
     "page": "Super sledge (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
+    "keyword": "ma_PipeSyringer",
+    "baseID": "14d09e",
+    "name": "Syringer",
+    "page": "Syringer"
+  },
+  {
+    "file": "Fallout4.esm",
     "keyword": "ma_TireIron",
+    "baseID": "185d25",
     "name": "tire iron",
     "page": "Tire iron (Fallout 4)"
   },
   {
     "file": "Fallout4.esm",
     "keyword": "ma_WalkingCane",
+    "baseID": "0fdc7d",
     "name": "walking cane",
     "page": "Walking cane"
   },
+
   {
     "file": "DLCRobot.esm",
     "keyword": "dlc01ma_AssaultronBlade",
+    "baseID": "xx008b8e",
     "name": "assaultron blade",
     "page": "Assaultron blade"
   },
   {
     "file": "DLCRobot.esm",
     "keyword": "dlc01ma_MrHandyBuzzBlade",
+    "baseID": "xx0020f8",
     "name": "Mr. Handy buzz blade",
     "page": "Mr. Handy buzz blade"
   },
   {
     "file": "DLCRobot.esm",
     "keyword": "dlc01ma_LightningGun",
+    "baseID": "xx003e07",
     "name": "Tesla rifle",
     "page": "Tesla rifle"
   },
+
   {
     "file": "DLCCoast.esm",
     "keyword": "dlc03_ma_HarpoonGun",
+    "baseID": "xx010b81",
     "name": "harpoon gun",
     "page": "Harpoon gun"
   },
   {
     "file": "DLCCoast.esm",
     "keyword": "dlc03_ma_LeverGun",
+    "baseID": "xx02c8b0",
     "name": "lever-action rifle",
     "page": "Lever-action rifle (Far Harbor)"
   },
   {
     "file": "DLCCoast.esm",
     "keyword": "dlc03_ma_RadiumRifle",
+    "baseID": "xx025fc4",
     "name": "radium rifle",
     "page": "Radium rifle"
   },
+
   {
     "file": "DLCNukaWorld.esm",
     "keyword": "dlc04_ma_DisciplesBlade",
+    "baseID": "xx01aabc",
     "name": "Disciples blade",
     "page": "Disciples blade"
   },
   {
     "file": "DLCNukaWorld.esm",
     "keyword": "dlc04_ma_HandmadeAssaultRifle",
+    "baseID": "xx033b60",
     "name": "handmade rifle",
     "page": "Handmade rifle"
   },
   {
     "file": "DLCNukaWorld.esm",
     "keyword": "dlc04_ma_PaddleBall",
+    "baseID": "xx00a6c0",
     "name": "paddle ball",
     "page": "Paddle ball"
   },
   {
     "file": "DLCNukaWorld.esm",
     "keyword": "dlc04_ma_Revolver",
+    "baseID": "xx0415b3",
     "name": "western revolver",
     "page": "Western revolver"
   },
   {
     "file": "DLCNukaWorld.esm",
     "keyword": "dlc04_ma_ThirstZapper",
+    "baseID": "xx007bc8",
     "name": "Thirst Zapper",
     "page": "Thirst Zapper"
   }
