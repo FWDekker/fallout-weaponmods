@@ -35,11 +35,6 @@ begin
         exit;
     end;
 
-    if (Length(NameToEditorID(GetEditValue(ElementBySignature(e, 'LNAM')))) = 0) then
-    begin
-        exit;
-    end;
-
 
 
     // Init
