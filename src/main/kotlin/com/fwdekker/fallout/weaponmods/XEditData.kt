@@ -55,8 +55,18 @@ data class ObjectModifier(
     val name: String,
     val description: String,
     val looseMod: String,
-    val weaponName: String
-)
+    val weaponName: String,
+    val effects: List<Effect>
+) {
+    data class Effect(
+        val valueType: String,
+        val functionType: String,
+        val property: String,
+        val value1: Any,
+        val value2: Any,
+        val step: Float
+    )
+}
 
 /**
  * The recipe for the weapon mod. (COBJ)
