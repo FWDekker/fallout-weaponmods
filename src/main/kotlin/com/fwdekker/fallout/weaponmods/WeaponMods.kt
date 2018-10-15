@@ -7,7 +7,9 @@ import kotlin.system.exitProcess
 
 data class WeaponMod(
     val esm: ESM,
-    val formIDTemplate: String,
+    val formIDTemplate: String, // TODO rename to something more sensible (use a class?)
+    val name: String,
+    val prefix: String,
     val weapon: Weapon,
     val description: String,
     val components: Map<Component, Int>,
@@ -66,6 +68,8 @@ data class WeaponMod(
             return WeaponMod(
                 esm = esm!!,
                 formIDTemplate = formIDTemplate,
+                name = looseMod.name,
+                prefix = objectModifier.name,
                 weapon = weapon!!,
                 description = objectModifier.description,
                 components = components,
