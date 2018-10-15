@@ -82,11 +82,14 @@ data class Weapon(
  * @property model the path of the in-game model used for the weapon mod
  * @property image the path on Nukapedia for the image to display for the model
  */
+// TODO this can just be a map, no need for a class
 data class Model(
     val model: String,
     val image: String
 ) {
     companion object {
+        val default = Model("NULL", "NULL") // TODO delete this
+
         private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
             .map { Pair(it.model.toLowerCase(), it) }
             .toMap()
@@ -114,6 +117,8 @@ data class Perk(
     val page: String
 ) {
     companion object {
+        val default = Perk("NULL", "NULL", "NULL")
+
         private val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
             .map { Pair(it.editorID.toLowerCase(), it) }
             .toMap()

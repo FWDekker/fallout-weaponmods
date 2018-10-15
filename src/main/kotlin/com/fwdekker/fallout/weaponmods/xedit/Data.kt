@@ -5,6 +5,8 @@ import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
 import com.fwdekker.fallout.weaponmods.wiki.ESM
+import com.fwdekker.fallout.weaponmods.wiki.Model
+import com.fwdekker.fallout.weaponmods.wiki.Perk
 import mu.KLogging
 import java.io.File
 
@@ -22,6 +24,8 @@ data class GameDatabase(
             var klaxon = Klaxon()
                 .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
                 .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
+                .fieldConverter(PerkConverter.Annotation::class, PerkConverter())
+                .fieldConverter(ModelConverter.Annotation::class, ModelConverter())
 
             // TODO throw exceptions
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
@@ -37,7 +41,6 @@ data class GameDatabase(
 
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
-
     }
 }
 
@@ -92,6 +95,30 @@ class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Conve
     annotation class Annotation
 }
 
+class PerkConverter : Converter {
+    override fun canConvert(cls: Class<*>) = cls == Perk::class.java
+
+    override fun fromJson(jv: JsonValue) = Perk.get(jv.string!!) ?: Perk.default // TODO return null
+
+    override fun toJson(value: Any) = "\"${(value as Perk).editorID}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
+class ModelConverter : Converter {
+    override fun canConvert(cls: Class<*>) = cls == Model::class.java
+
+    override fun fromJson(jv: JsonValue) = Model.get(jv.string!!) ?: Model.default // TODO use null
+
+    override fun toJson(value: Any) = "\"${(value as Model).model}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
 
 /**
  * A component. (CMPO)
@@ -130,9 +157,11 @@ data class LooseMod(
     val name: String,
     val value: Int,
     val weight: Double,
-    val model: String
+    @ModelConverter.Annotation
+    val model: Model
 ) {
     companion object {
+        // TODO remove default
         val default = LooseMod(
             file = ESM.get("Fallout4.esm")!!, // TODO catch
             formID = FormID("000000"),
@@ -140,7 +169,7 @@ data class LooseMod(
             name = "NULL",
             value = 0,
             weight = 0.0,
-            model = "NULL"
+            model = Model.default // TODO use null instead
         )
     }
 }
@@ -226,27 +255,15 @@ data class CraftableObject(
     )
 
     /**
-     * A requirement for crafting a [CraftableObject].
+     * Indicates a [Perk] and its corresponding rank that are required to craft the weapon mod.
      *
-     * A requirement is expressed as the comparison between two values. On one side is the [function] to which some
-     * argument is given as a parameter, and on the other side is the [comparison]—the expected value. The expected
-     * relation between the two values is expressed by the [type].
-     *
-     * The value that is given to the [function] is either the [perk] or the [keyword]—it is not possible for both
-     * values to be present in one condition.
-     *
-     * @property function the function on the left-hand side
-     * @property perk the perk that is given to [function]
-     * @property keyword the keyword that is given to [function]
-     * @property type the type of comparison (e.g. "Equal to")
-     * @property comparison the expected value on the right-hand side
+     * @property perk the perk
+     * @property rank the rank of the perk
      */
     data class Condition(
-        val function: String,
-        val perk: String,
-        val keyword: String,
-        val type: String,
-        val comparison: String
+        @PerkConverter.Annotation
+        val perk: Perk,
+        val rank: Int
     )
 }
 

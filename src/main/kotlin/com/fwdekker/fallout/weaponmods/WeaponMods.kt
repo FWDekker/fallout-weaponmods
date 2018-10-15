@@ -4,8 +4,6 @@ import com.fwdekker.fallout.weaponmods.wiki.Article
 import com.fwdekker.fallout.weaponmods.wiki.Category
 import com.fwdekker.fallout.weaponmods.wiki.CraftingTable
 import com.fwdekker.fallout.weaponmods.wiki.ESM
-import com.fwdekker.fallout.weaponmods.wiki.Model
-import com.fwdekker.fallout.weaponmods.wiki.Perk
 import com.fwdekker.fallout.weaponmods.wiki.Section
 import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
 import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
@@ -45,7 +43,7 @@ data class WeaponMod(
     val weaponData: XEditWeapon,
     val description: String,
     val components: Map<Component, Int>,
-    val perkRequirements: Map<Perk, Int>,
+    val requirements: List<CraftableObject.Condition>,
     val effects: List<ObjectModifier.Effect>,
     val value: Int,
     val weight: Double,
@@ -76,16 +74,7 @@ data class WeaponMod(
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
-            val model = Model.get(looseMod.model)
-            require(model != null) { "Could not find model `${looseMod.model}`." }
-
             val perks = craftableObject.conditions
-                .filter { it.perk.isNotEmpty() }
-                .map {
-                    // TODO handle null
-                    Pair(Perk.get(it.perk.substringBefore("0"))!!, it.perk.substringAfter("0").toInt())
-                }
-                .toMap()
 
             val weapon = WikiWeapon.get(objectModifier.weaponName)
             require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
@@ -106,11 +95,11 @@ data class WeaponMod(
                 weaponData = xEditWeapon,
                 description = objectModifier.description,
                 components = components,
-                perkRequirements = perks,
+                requirements = perks,
                 effects = objectModifier.effects,
                 value = looseMod.value,
                 weight = looseMod.weight,
-                image = model!!.image
+                image = looseMod.model.image
             )
         }
     }
@@ -174,7 +163,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return CraftingTable(
             materials = mod.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
-            perks = mod.perkRequirements.map { Pair(it.key.name, it.value) }, // TODO insert link to perk
+            perks = mod.requirements.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
         ).toString()
     }
