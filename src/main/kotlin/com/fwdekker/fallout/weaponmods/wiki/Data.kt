@@ -1,6 +1,9 @@
 package com.fwdekker.fallout.weaponmods.wiki
 
 import com.beust.klaxon.Klaxon
+import com.fwdekker.fallout.weaponmods.FormID
+import com.fwdekker.fallout.weaponmods.xedit.ESMConverter
+import com.fwdekker.fallout.weaponmods.xedit.FormIDConverter
 import java.io.File
 
 
@@ -52,9 +55,11 @@ data class ESM(
  * @property link a [Link] object for this weapon
  */
 data class Weapon(
-    val file: String,
+    @ESMConverter.Annotation
+    val file: ESM,
     val keyword: String,
-    val baseID: String,
+    @FormIDConverter.Annotation
+    val formID: FormID,
     val name: String,
     val page: String
 ) {
@@ -62,15 +67,18 @@ data class Weapon(
 
 
     companion object {
-        val default = Weapon(
-            file = "Fallout4.esm",
+        val default = Weapon( // TODO remove this
+            file = ESM.get("Fallout4.esm")!!,
             keyword = "NULL",
-            baseID = "NULL",
+            formID = FormID("000000"),
             name = "NULL",
             page = "NULL"
         )
 
-        private val weapons = Klaxon().parseArray<Weapon>(File("weapons.json").inputStream())!!
+        private val weapons = Klaxon()
+            .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
+            .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
+            .parseArray<Weapon>(File("weapons.json").inputStream())!!
             .map { Pair(it.keyword.toLowerCase(), it) }
             .toMap()
 

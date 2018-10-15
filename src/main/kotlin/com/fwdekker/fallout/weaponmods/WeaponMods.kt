@@ -63,7 +63,7 @@ data class WeaponMod(
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
-            val xEditWeapon = database.weapons.single { it.formID == FormID(objectModifier.weapon.baseID) }
+            val xEditWeapon = database.weapons.single { it.formID == objectModifier.weapon.formID }
 
             return WeaponMod(
                 looseMod,
