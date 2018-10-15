@@ -9,7 +9,8 @@ data class GameDatabase(
     val looseMods: List<LooseMod>,
     val objectModifiers: List<ObjectModifier>,
     val craftableObjects: List<CraftableObject>,
-    val components: List<Component>
+    val components: List<Component>,
+    val weapons: List<XWeapon>
 ) {
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
@@ -21,8 +22,10 @@ data class GameDatabase(
                 ?: return null
             val components = parseFile<Component>(File(directory, "cmpo.json"))
                 ?: return null
+            val weapons = parseFile<XWeapon>(File(directory, "weap.json"))
+                ?: return null
 
-            return GameDatabase(looseMods, objectModifiers, craftableObjects, components)
+            return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
 
         private inline fun <reified T> parseFile(file: File) = Klaxon().parseArray<T>(file.inputStream())
