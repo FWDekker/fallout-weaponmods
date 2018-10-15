@@ -70,7 +70,7 @@ data class Weapon(
         val default = Weapon( // TODO remove this
             file = ESM.get("Fallout4.esm")!!,
             keyword = "NULL",
-            formID = FormID("000000"),
+            formID = FormID(false, "000000"),
             name = "NULL",
             page = "NULL"
         )

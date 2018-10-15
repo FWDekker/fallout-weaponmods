@@ -18,17 +18,33 @@ import com.fwdekker.fallout.weaponmods.wiki.Weapon as WikiWeapon
 import com.fwdekker.fallout.weaponmods.xedit.Weapon as XEditWeapon
 
 
-// TODO document this
-data class FormID(val id: String) : WikiTemplate(
-    // TODO increase readability
-    if (id.dropWhile { it == '0' }.length > 6)
-        "DLC ID"
-    else
-        "ID",
-    listOf("1" to id.takeLast(6).toLowerCase())
+/**
+ * A form ID.
+ *
+ * @property addOn whether the form ID is for an add-on
+ * @property id the six-digit lowercase hexadecimal form ID
+ */
+data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
+    if (addOn) "DLC ID" else "ID",
+    listOf("1" to id)
 ) {
-    override fun equals(other: Any?): Boolean {
-        return other is FormID && this.id.takeLast(6).toLowerCase() == other.id.takeLast(6).toLowerCase()
+    init {
+        require(Regex("[0-9a-fA-F]*").matches(id)) { "Form IDs must be hexadecimal." }
+        require(id.length == 6) { "Form IDs must have six hexadecimal numbers." }
+        require(id == id.toLowerCase()) { "Form IDs must be in lowercase." }
+    }
+
+
+    companion object {
+        /**
+         * Transforms a string into a form ID.
+         *
+         * @param id a string
+         */
+        fun fromString(id: String): FormID {
+            val addOn = id.dropWhile { it == '0' }
+            return FormID(addOn.length > 6, addOn.takeLast(6).padStart(6))
+        }
     }
 }
 

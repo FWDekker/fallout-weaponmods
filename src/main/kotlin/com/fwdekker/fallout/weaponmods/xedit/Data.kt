@@ -52,7 +52,7 @@ data class GameDatabase(
 class FormIDConverter : Converter {
     override fun canConvert(cls: Class<*>) = cls == FormID::class.java
 
-    override fun fromJson(jv: JsonValue) = FormID(jv.string!!)
+    override fun fromJson(jv: JsonValue) = FormID.fromString(jv.string!!)
 
     override fun toJson(value: Any) = "\"${(value as FormID).id}\""
 
@@ -169,7 +169,7 @@ data class Component(
     companion object {
         val default = Component( // TODO remove this
             file = ESM.get("Fallout4.esm")!!,
-            formID = FormID("000000"),
+            formID = FormID(false, "000000"),
             editorID = "NULL",
             name = "NULL"
         )
@@ -203,7 +203,7 @@ data class LooseMod(
         // TODO remove default
         val default = LooseMod(
             file = ESM.get("Fallout4.esm")!!, // TODO catch
-            formID = FormID("000000"),
+            formID = FormID(false, "000000"),
             editorID = "NULL",
             name = "NULL",
             value = 0,
@@ -251,7 +251,7 @@ data class ObjectModifier(
     companion object {
         val default = ObjectModifier(
             file = ESM.get("Fallout4.esm")!!, // TODO catch
-            formID = FormID("000000"),
+            formID = FormID(false, "000000"),
             editorID = "NULL",
             name = "NULL",
             description = "NULL",
