@@ -57,9 +57,9 @@ begin
         outputLines.Add('    "valueType": "'      + GetEditValue(ElementByPath(effect, 'Value Type'))    + '",');
         outputLines.Add('    "functionType": "'   + GetEditValue(ElementByPath(effect, 'Function Type')) + '",');
         outputLines.Add('    "property": "'       + GetEditValue(ElementByPath(effect, 'Property'))      + '",');
-        outputLines.Add('    "value1": '          + GetEffectValue1(effect)                              + ' ,');
-        outputLines.Add('    "value2": '          + GetEffectValue1(effect)                              + ' ,');
-        outputLines.Add('    "step": '            + GetEditValue(ElementByPath(effect, 'Step'))          + ' ,');
+        outputLines.Add('    "value1": '          + GetEffectValue1(effect)                              +  ',');
+        outputLines.Add('    "value2": '          + GetEffectValue1(effect)                              +  ',');
+        outputLines.Add('    "step": '            + GetEditValue(ElementByPath(effect, 'Step'))          +  ',');
         outputLines.Add('  },');
     end;
 
@@ -90,6 +90,10 @@ begin
     valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
     i := pos(',', valueType);
     valueType := copy(valueType, 1, i - 1);
+    if (Length(valueType) = 0) then
+    begin
+        valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
+    end;
 
     Result := GetEditValue(ElementByPath(effect, 'Value 1 - ' + valueType));
     Result := FormatEffectValue(Result, valueType);
@@ -103,6 +107,10 @@ begin
     valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
     i := pos(',', valueType);
     valueType := copy(valueType, i + 1, Length(valueType) - i);
+    if (Length(valueType) = 0) then
+    begin
+        valueType := GetEditValue(ElementByPath(effect, 'Value Type'));
+    end;
 
     Result := GetEditValue(ElementByPath(effect, 'Value 2 - ' + valueType));
     Result := FormatEffectValue(Result, valueType);
