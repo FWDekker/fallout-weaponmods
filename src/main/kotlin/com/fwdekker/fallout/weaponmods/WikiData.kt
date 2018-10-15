@@ -4,6 +4,23 @@ import com.beust.klaxon.Klaxon
 import java.io.File
 
 
+data class FormID(val id: String) : WikiTemplate(
+    // TODO increase readability
+    if (id.dropWhile { it == '0' }.length > 6)
+        "DLC ID"
+    else
+        "ID",
+    listOf("1" to id.takeLast(6))
+) {
+    val x = 3
+
+    companion object {
+        fun fromDecimal(decimal: Int): FormID {
+            return FormID(decimal.toString(16))
+        }
+    }
+}
+
 /**
  * An ESM as described on Nukapedia.
  *

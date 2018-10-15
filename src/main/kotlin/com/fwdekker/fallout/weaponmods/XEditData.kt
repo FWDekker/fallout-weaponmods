@@ -139,6 +139,7 @@ data class CraftableObject(
  * @property value the value of the weapon in bottle caps
  */
 data class XWeapon(
+    // TODO rename this without conflicting with the wiki weapon
     val file: String,
     val formID: Int,
     val editorID: String,
