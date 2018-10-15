@@ -7,7 +7,6 @@ import com.fwdekker.fallout.weaponmods.wiki.ESM
 import com.fwdekker.fallout.weaponmods.wiki.Section
 import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
 import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
-import com.fwdekker.fallout.weaponmods.xedit.Component
 import com.fwdekker.fallout.weaponmods.xedit.CraftableObject
 import com.fwdekker.fallout.weaponmods.xedit.GameDatabase
 import com.fwdekker.fallout.weaponmods.xedit.LooseMod
@@ -42,7 +41,7 @@ data class WeaponMod(
     val weapon: WikiWeapon,
     val weaponData: XEditWeapon,
     val description: String,
-    val components: Map<Component, Int>,
+    val components: List<CraftableObject.Component>,
     val requirements: List<CraftableObject.Condition>,
     val effects: List<ObjectModifier.Effect>,
     val value: Int,
@@ -76,25 +75,18 @@ data class WeaponMod(
 
             val perks = craftableObject.conditions
 
-            val weapon = WikiWeapon.get(objectModifier.weaponName)
-            require(weapon != null) { "Could not find weapon `${objectModifier.weaponName}`." }
-
             // TODO initialise FormID objects during construction
-            val xEditWeapon = database.weapons.single { it.formID == FormID(weapon!!.baseID) }
-
-            val components = craftableObject.components  // TODO fix component capitalisation and links
-                .map { Pair(it.component, it.count) }
-                .toMap()
+            val xEditWeapon = database.weapons.single { it.formID == FormID(objectModifier.weapon.baseID) }
 
             return WeaponMod(
                 esm = looseMod.file,
                 formID = looseMod.formID,
                 name = looseMod.name,
                 prefix = objectModifier.name,
-                weapon = weapon!!,
+                weapon = objectModifier.weapon,
                 weaponData = xEditWeapon,
                 description = objectModifier.description,
-                components = components,
+                components = craftableObject.components,
                 requirements = perks,
                 effects = objectModifier.effects,
                 value = looseMod.value,
@@ -161,7 +153,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private fun createProductionTable(mod: WeaponMod): String {
         return CraftingTable(
-            materials = mod.components.map { it.key.name to it.value },
+            materials = mod.components.map { it.component.name to it.count },
             workspace = "[[Weapons workbench]]",
             perks = mod.requirements.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)

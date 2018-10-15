@@ -62,6 +62,14 @@ data class Weapon(
 
 
     companion object {
+        val default = Weapon(
+            file = "Fallout4.esm",
+            keyword = "NULL",
+            baseID = "NULL",
+            name = "NULL",
+            page = "NULL"
+        )
+
         private val weapons = Klaxon().parseArray<Weapon>(File("weapons.json").inputStream())!!
             .map { Pair(it.keyword.toLowerCase(), it) }
             .toMap()

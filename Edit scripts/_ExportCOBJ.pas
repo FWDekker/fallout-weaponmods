@@ -22,6 +22,7 @@ var
 
     conditions: IwbContainer;
     condition: IwbElement;
+    perk: string;
 begin
     if (CompareText(Signature(e), 'COBJ') <> 0) then
     begin
@@ -71,12 +72,15 @@ begin
         condition := ElementByIndex(conditions, i);
         condition := ElementBySignature(condition, 'CTDA');
 
+        if (Length(GetEditValue(ElementByName(condition, 'Perk'))) = 0) then
+        begin
+            continue;
+        end;
+
+        perk := GetEditValue(ElementByName(condition, 'Perk'));
         outputLines.Add('  {');
-        outputLines.Add('    "function": "'   + GetEditValue(ElementByName(condition, 'Function'))                 + '",');
-        outputLines.Add('    "perk": "'       + NameToEditorID(GetEditValue(ElementByName(condition, 'Perk')))     + '",');
-        outputLines.Add('    "keyword": "'    + NameToEditorID(GetEditValue(ElementByName(condition, 'Keyword')))  + '",');
-        outputLines.Add('    "type": "'       + GetEditValue(ElementByName(condition, 'Type'))                     + '",');
-        outputLines.Add('    "comparison": "' + GetEditValue(ElementByName(condition, 'Comparison Value - Float')) + '",');
+        outputLines.Add('    "perk": "' + PerkName(NameToEditorID(perk)) + '",');
+        outputLines.Add('    "rank": '  + PerkRank(NameToEditorID(perk)) +  ',');
         outputLines.Add('  },');
     end;
 
@@ -96,6 +100,23 @@ begin
         CreateDir('fallout-weaponmods/');
         outputLines.SaveToFile('fallout-weaponmods/cobj.json');
     end;
+end;
+
+
+function PerkName(perk: string): string;
+var
+    i: integer;
+begin
+    i := pos('0', perk);
+    Result := copy(perk, 1, i - 1);
+end;
+
+function PerkRank(perk: string): string;
+var
+    i: integer;
+begin
+    i := pos('0', perk);
+    Result := copy(perk, i + 1, Length(perk) - i);
 end;
 
 

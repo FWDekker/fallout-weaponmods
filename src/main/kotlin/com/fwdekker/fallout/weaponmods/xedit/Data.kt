@@ -31,6 +31,9 @@ data class GameDatabase(
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
             klaxon = klaxon.fieldConverter(ComponentConverter.Annotation::class, ComponentConverter(components))
 
+            val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
+            klaxon = klaxon.fieldConverter(WeaponConverter.Annotation::class, WeaponConverter())
+
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
             klaxon = klaxon.fieldConverter(LooseModConverter.Annotation::class, LooseModConverter(looseMods))
 
@@ -39,7 +42,6 @@ data class GameDatabase(
                 ObjectModifierConverter(objectModifiers))
 
             val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
-            val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
 
             return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
         }
@@ -125,9 +127,22 @@ class ComponentConverter(val components: List<Component>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Component::class.java
 
     override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID == jv.string!! }
-    ?: Component.default // TODO change to null
+        ?: Component.default // TODO change to null
 
     override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
+
+
+    @Target(AnnotationTarget.FIELD)
+    annotation class Annotation
+}
+
+class WeaponConverter : Converter {
+    override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
+
+    override fun fromJson(jv: JsonValue) = com.fwdekker.fallout.weaponmods.wiki.Weapon.get(jv.string!!)
+        ?: com.fwdekker.fallout.weaponmods.wiki.Weapon.default // TODO return null
+
+    override fun toJson(value: Any) = "\"${(value as com.fwdekker.fallout.weaponmods.wiki.Weapon).keyword}\""
 
 
     @Target(AnnotationTarget.FIELD)
@@ -154,9 +169,9 @@ data class Component(
     companion object {
         val default = Component( // TODO remove this
             file = ESM.get("Fallout4.esm")!!,
-                formID = FormID("000000"),
-                editorID = "NULL",
-                name = "NULL"
+            formID = FormID("000000"),
+            editorID = "NULL",
+            name = "NULL"
         )
     }
 }
@@ -207,7 +222,7 @@ data class LooseMod(
  * @property name the name of the weapon mod
  * @property description the effects of the weapon mod
  * @property looseMod the editor ID of the corresponding [LooseMod]
- * @property weaponName the keyword of the weapon to which the effects can be applied
+ * @property weapon the keyword of the weapon to which the effects can be applied
  */
 data class ObjectModifier(
     @ESMConverter.Annotation
@@ -219,7 +234,8 @@ data class ObjectModifier(
     val description: String,
     @LooseModConverter.Annotation
     val looseMod: LooseMod,
-    val weaponName: String,
+    @WeaponConverter.Annotation
+    val weapon: com.fwdekker.fallout.weaponmods.wiki.Weapon,
     val effects: List<Effect>
 ) {
     data class Effect(
@@ -240,7 +256,7 @@ data class ObjectModifier(
             name = "NULL",
             description = "NULL",
             looseMod = LooseMod.default,
-            weaponName = "NULL",
+            weapon = com.fwdekker.fallout.weaponmods.wiki.Weapon.default,
             effects = emptyList()
         )
     }
@@ -315,13 +331,13 @@ data class Weapon(
     val formID: FormID,
     val editorID: String,
     val name: String,
-    val speed: Float,
-    val reloadSpeed: Float,
-    val reach: Float,
-    val minRange: Float,
-    val maxRange: Float,
-    val attackDelay: Float,
-    val weight: Float,
+    val speed: Double,
+    val reloadSpeed: Double,
+    val reach: Double,
+    val minRange: Double,
+    val maxRange: Double,
+    val attackDelay: Double,
+    val weight: Double,
     val value: Int,
     val baseDamage: Int
 )
