@@ -43,7 +43,7 @@ data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
          */
         fun fromString(id: String): FormID {
             val addOn = id.dropWhile { it == '0' }
-            return FormID(addOn.length > 6, addOn.takeLast(6).padStart(6))
+            return FormID(addOn.length > 6, addOn.takeLast(6).padStart(6, '0'))
         }
     }
 }
