@@ -77,7 +77,6 @@ class LooseModConverter(val looseMods: List<LooseMod>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == LooseMod::class.java
 
     override fun fromJson(jv: JsonValue) = looseMods.singleOrNull { it.editorID == jv.string }
-        ?: LooseMod.default // TODO return null
 
     override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
 
@@ -90,7 +89,6 @@ class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Conve
     override fun canConvert(cls: Class<*>) = cls == ObjectModifier::class.java
 
     override fun fromJson(jv: JsonValue) = objectModifiers.singleOrNull { it.editorID == jv.string }
-        ?: ObjectModifier.default // TODO return null instead
 
     override fun toJson(value: Any) = "\"${(value as ObjectModifier).editorID}\""
 
@@ -102,7 +100,7 @@ class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Conve
 class PerkConverter : Converter {
     override fun canConvert(cls: Class<*>) = cls == Perk::class.java
 
-    override fun fromJson(jv: JsonValue) = Perk.get(jv.string!!) ?: Perk.default // TODO return null
+    override fun fromJson(jv: JsonValue) = Perk.get(jv.string!!)
 
     override fun toJson(value: Any) = "\"${(value as Perk).editorID}\""
 
@@ -114,7 +112,7 @@ class PerkConverter : Converter {
 class ModelConverter : Converter {
     override fun canConvert(cls: Class<*>) = cls == Model::class.java
 
-    override fun fromJson(jv: JsonValue) = Model.get(jv.string!!) ?: Model.default // TODO use null
+    override fun fromJson(jv: JsonValue) = Model.get(jv.string!!)
 
     override fun toJson(value: Any) = "\"${(value as Model).model}\""
 
@@ -127,7 +125,6 @@ class ComponentConverter(val components: List<Component>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Component::class.java
 
     override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID == jv.string!! }
-        ?: Component.default // TODO change to null
 
     override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
 
@@ -140,7 +137,6 @@ class WeaponConverter : Converter {
     override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
 
     override fun fromJson(jv: JsonValue) = com.fwdekker.fallout.weaponmods.wiki.Weapon.get(jv.string!!)
-        ?: com.fwdekker.fallout.weaponmods.wiki.Weapon.default // TODO return null
 
     override fun toJson(value: Any) = "\"${(value as com.fwdekker.fallout.weaponmods.wiki.Weapon).keyword}\""
 
@@ -165,16 +161,7 @@ data class Component(
     val formID: FormID,
     val editorID: String,
     val name: String
-) {
-    companion object {
-        val default = Component( // TODO remove this
-            file = ESM.get("Fallout4.esm")!!,
-            formID = FormID(false, "000000"),
-            editorID = "NULL",
-            name = "NULL"
-        )
-    }
-}
+)
 
 /**
  * The weapon mod as seen in the player character's inventory. (MISC)
@@ -198,20 +185,7 @@ data class LooseMod(
     val weight: Double,
     @ModelConverter.Annotation
     val model: Model
-) {
-    companion object {
-        // TODO remove default
-        val default = LooseMod(
-            file = ESM.get("Fallout4.esm")!!, // TODO catch
-            formID = FormID(false, "000000"),
-            editorID = "NULL",
-            name = "NULL",
-            value = 0,
-            weight = 0.0,
-            model = Model.default // TODO use null instead
-        )
-    }
-}
+)
 
 /**
  * The effects of the weapon mod. (OMOD)
@@ -246,20 +220,6 @@ data class ObjectModifier(
         val value2: Any,
         val step: Float
     )
-
-
-    companion object {
-        val default = ObjectModifier(
-            file = ESM.get("Fallout4.esm")!!, // TODO catch
-            formID = FormID(false, "000000"),
-            editorID = "NULL",
-            name = "NULL",
-            description = "NULL",
-            looseMod = LooseMod.default,
-            weapon = com.fwdekker.fallout.weaponmods.wiki.Weapon.default,
-            effects = emptyList()
-        )
-    }
 }
 
 /**

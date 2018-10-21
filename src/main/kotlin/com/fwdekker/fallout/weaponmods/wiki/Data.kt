@@ -67,14 +67,6 @@ data class Weapon(
 
 
     companion object {
-        val default = Weapon( // TODO remove this
-            file = ESM.get("Fallout4.esm")!!,
-            keyword = "NULL",
-            formID = FormID(false, "000000"),
-            name = "NULL",
-            page = "NULL"
-        )
-
         private val weapons = Klaxon()
             .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
             .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
@@ -104,8 +96,6 @@ data class Model(
     val image: String
 ) {
     companion object {
-        val default = Model("NULL", "NULL") // TODO delete this
-
         private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
             .map { Pair(it.model.toLowerCase(), it) }
             .toMap()
@@ -133,8 +123,6 @@ data class Perk(
     val page: String
 ) {
     companion object {
-        val default = Perk("NULL", "NULL", "NULL")
-
         private val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
             .map { Pair(it.editorID.toLowerCase(), it) }
             .toMap()
