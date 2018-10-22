@@ -1,5 +1,6 @@
 package com.fwdekker.fallout.weaponmods
 
+import com.beust.klaxon.JsonValue
 import com.fwdekker.fallout.weaponmods.wiki.Article
 import com.fwdekker.fallout.weaponmods.wiki.Category
 import com.fwdekker.fallout.weaponmods.wiki.CraftingTable
@@ -31,6 +32,19 @@ data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
         require(Regex("[0-9a-fA-F]*").matches(id)) { "Form IDs must be hexadecimal." }
         require(id.length == 6) { "Form IDs must have six hexadecimal numbers." }
         require(id == id.toLowerCase()) { "Form IDs must be in lowercase." }
+    }
+
+
+    class Converter : com.beust.klaxon.Converter {
+        override fun canConvert(cls: Class<*>) = cls == FormID::class.java
+
+        override fun fromJson(jv: JsonValue) = FormID.fromString(jv.string!!)
+
+        override fun toJson(value: Any) = "\"${(value as FormID).id}\""
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
     }
 
 

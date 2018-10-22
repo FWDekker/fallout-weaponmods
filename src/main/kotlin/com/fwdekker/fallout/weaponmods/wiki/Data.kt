@@ -1,8 +1,7 @@
 package com.fwdekker.fallout.weaponmods.wiki
 
+import com.beust.klaxon.JsonValue
 import com.fwdekker.fallout.weaponmods.FormID
-import com.fwdekker.fallout.weaponmods.xedit.ESMConverter
-import com.fwdekker.fallout.weaponmods.xedit.FormIDConverter
 
 
 /**
@@ -24,6 +23,21 @@ data class ESM(
     val modCategory: String? = null
 ) {
     val link = Link(page, name)
+
+
+    class Converter(val files: List<ESM>) : com.beust.klaxon.Converter {
+        override fun canConvert(cls: Class<*>) = cls == ESM::class.java
+
+        override fun fromJson(jv: JsonValue) =
+            files.singleOrNull { it.fileName.equals(jv.string, ignoreCase = true) }
+                ?: error("Could not find ESM `${jv.string}`.")
+
+        override fun toJson(value: Any) = "\"${(value as ESM).fileName}\""
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
 }
 
 /**
@@ -36,10 +50,10 @@ data class ESM(
  * @property link a [Link] object for this weapon
  */
 data class Weapon(
-    @ESMConverter.Annotation
+    @ESM.Converter.Annotation
     val file: ESM,
     val keyword: String,
-    @FormIDConverter.Annotation
+    @FormID.Converter.Annotation
     val formID: FormID,
     val name: String,
     val page: String
@@ -57,7 +71,19 @@ data class Weapon(
 data class Model(
     val model: String,
     val image: String
-)
+) {
+    class Converter(val models: List<Model>) : com.beust.klaxon.Converter {
+        override fun canConvert(cls: Class<*>) = cls == Model::class.java
+
+        override fun fromJson(jv: JsonValue) = models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
+
+        override fun toJson(value: Any) = "\"${(value as Model).model}\""
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
+}
 
 /**
  * Maps a perk editor ID to its rank and a Nukapedia page.
@@ -70,4 +96,18 @@ data class Perk(
     val editorID: String,
     val name: String,
     val page: String
-)
+) {
+    class Converter(val perks: List<Perk>) : com.beust.klaxon.Converter {
+        override fun canConvert(cls: Class<*>) = cls == Perk::class.java
+
+        override fun fromJson(jv: JsonValue) =
+            perks.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
+                ?: error("Could not find perk `${jv.string}`.")
+
+        override fun toJson(value: Any) = "\"${(value as Perk).editorID}\""
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
+}
