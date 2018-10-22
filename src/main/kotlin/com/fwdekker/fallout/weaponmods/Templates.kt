@@ -4,11 +4,11 @@ package com.fwdekker.fallout.weaponmods
 /**
  * A MediaWiki template.
  *
- * @property template the name of the template
+ * @property templateName the name of the template
  * @property values the key-value pairs of the template
  */
 open class WikiTemplate(
-    private val template: String,
+    private val templateName: String,
     private val values: List<Pair<String, String>> = emptyList()
 ) {
     /**
@@ -24,32 +24,30 @@ open class WikiTemplate(
      * Formats the template as a string.
      *
      * @param multiline true iff each key-value pair should be on its own line
+     * @param keyPadding true iff keys should be padded on the right to give all keys the same length. Ignored if the
+     *                   multiline option is false
      * @return the template as a string
      */
-    fun toString(multiline: Boolean): String {
+    fun toString(multiline: Boolean, keyPadding: Boolean = true): String {
         val keyWidth = (values.map { it.first.length }.max() ?: 0) + 1
 
-        // TODO remove duplication
-        return if (multiline)
-            "" +
-                "{{$template\n" +
-                values.joinToString("\n") {
-                    if (it.first.toIntOrNull() != null)
-                        "|${it.second}"
-                    else
-                        "|${it.first.padEnd(keyWidth)}=${it.second}"
-                } + "\n" +
-                "}}"
-        else
-            "" +
-                "{{$template" +
-                values.joinToString("") {
-                    if (it.first.toIntOrNull() != null)
-                        "|${it.second}"
-                    else
-                        "|${it.first}=${it.second}"
-                } +
-                "}}"
+        val padKey: (String) -> String = { key ->
+            if (multiline && keyPadding) key.padEnd(keyWidth)
+            else key
+        }
+        val newlineSymbol =
+            if (multiline) "\n"
+            else ""
+
+        return "" +
+            "{{$templateName$newlineSymbol" +
+            values.joinToString(newlineSymbol) {
+                if (it.first.toIntOrNull() != null)
+                    "|${it.second}"
+                else
+                    "|${padKey(it.first)}=${it.second}"
+            } + newlineSymbol +
+            "}}"
     }
 }
 
