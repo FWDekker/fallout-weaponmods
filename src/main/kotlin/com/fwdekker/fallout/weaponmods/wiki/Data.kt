@@ -32,7 +32,7 @@ data class ESM(
             files.singleOrNull { it.fileName.equals(jv.string, ignoreCase = true) }
                 ?: error("Could not find ESM `${jv.string}`.")
 
-        override fun toJson(value: Any) = "\"${(value as ESM).fileName}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
@@ -67,7 +67,6 @@ data class Weapon(
  * @property model the path of the in-game model used for the weapon mod
  * @property image the path on Nukapedia for the image to display for the model
  */
-// TODO this can just be a map, no need for a class
 data class Model(
     val model: String,
     val image: String
@@ -77,7 +76,7 @@ data class Model(
 
         override fun fromJson(jv: JsonValue) = models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
 
-        override fun toJson(value: Any) = "\"${(value as Model).model}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
@@ -104,7 +103,7 @@ data class Perk(
             perks.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
                 ?: error("Could not find perk `${jv.string}`.")
 
-        override fun toJson(value: Any) = "\"${(value as Perk).editorID}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)

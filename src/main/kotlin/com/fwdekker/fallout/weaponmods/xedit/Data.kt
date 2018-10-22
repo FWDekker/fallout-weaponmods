@@ -100,7 +100,7 @@ data class Component(
         override fun fromJson(jv: JsonValue) =
             components.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
-        override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
@@ -137,7 +137,7 @@ data class LooseMod(
         override fun fromJson(jv: JsonValue) =
             looseMods.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
-        override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
@@ -186,7 +186,7 @@ data class ObjectModifier(
         override fun fromJson(jv: JsonValue) =
             objectModifiers.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
-        override fun toJson(value: Any) = "\"${(value as ObjectModifier).editorID}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
@@ -304,7 +304,7 @@ data class Weapon(
 
         override fun fromJson(jv: JsonValue) = weapons.singleOrNull { it.keyword.equals(jv.string, ignoreCase = true) }
 
-        override fun toJson(value: Any) = "\"${(value as com.fwdekker.fallout.weaponmods.wiki.Weapon).keyword}\""
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
 
         @Target(AnnotationTarget.FIELD)
