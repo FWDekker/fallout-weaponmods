@@ -1,4 +1,4 @@
-package com.fwdekker.fallout.weaponmods.wiki
+package com.fwdekker.fallout.weaponmods
 
 
 /**

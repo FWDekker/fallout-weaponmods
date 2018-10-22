@@ -1,6 +1,4 @@
-package com.fwdekker.fallout.weaponmods.wiki
-
-import com.fwdekker.fallout.weaponmods.WeaponMod
+package com.fwdekker.fallout.weaponmods
 
 
 /**

@@ -1,4 +1,4 @@
-package com.fwdekker.fallout.weaponmods.xedit
+package com.fwdekker.fallout.weaponmods
 
 import com.beust.klaxon.Converter
 import com.beust.klaxon.Json
@@ -6,7 +6,6 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
-import com.fwdekker.fallout.weaponmods.wiki.Link
 import mu.KLogging
 import java.io.File
 
@@ -32,20 +31,25 @@ data class GameDatabase(
             val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
 
             var klaxon = Klaxon()
-                .fieldConverter(ESM.Converter.Annotation::class, ESM.Converter(files))
+                .fieldConverter(ESM.Converter.Annotation::class,
+                    ESM.Converter(files))
                 .fieldConverter(FormID.Converter.Annotation::class, FormID.Converter())
-                .fieldConverter(Perk.Converter.Annotation::class, Perk.Converter(perks))
-                .fieldConverter(Model.Converter.Annotation::class, Model.Converter(models))
+                .fieldConverter(Perk.Converter.Annotation::class,
+                    Perk.Converter(perks))
+                .fieldConverter(Model.Converter.Annotation::class,
+                    Model.Converter(models))
                 .fieldConverter(CraftableObject.ConditionConverter.Annotation::class,
                     CraftableObject.ConditionConverter(perks))
 
             val wikiWeapons = klaxon.parseArray<WikiWeapon>(File("weapons.json").inputStream())!!
             klaxon = klaxon
-                .fieldConverter(WikiWeapon.LinkConverter.Annotation::class, WikiWeapon.LinkConverter(wikiWeapons))
+                .fieldConverter(WikiWeapon.LinkConverter.Annotation::class,
+                    WikiWeapon.LinkConverter(wikiWeapons))
 
             // TODO throw exceptions
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
-            klaxon = klaxon.fieldConverter(Component.Converter.Annotation::class, Component.Converter(components))
+            klaxon = klaxon.fieldConverter(Component.Converter.Annotation::class,
+                Component.Converter(components))
             klaxon = klaxon.fieldConverter(CraftableObject.ComponentConverter.Annotation::class,
                 CraftableObject.ComponentConverter(components))
 
@@ -55,10 +59,12 @@ data class GameDatabase(
                 weapon.wikiLink = wikiWeapon?.link
                 weapon.keyword = wikiWeapon?.keyword
             }
-            klaxon = klaxon.fieldConverter(Weapon.Converter.Annotation::class, Weapon.Converter(weapons))
+            klaxon = klaxon.fieldConverter(Weapon.Converter.Annotation::class,
+                Weapon.Converter(weapons))
 
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
-            klaxon = klaxon.fieldConverter(LooseMod.Converter.Annotation::class, LooseMod.Converter(looseMods))
+            klaxon = klaxon.fieldConverter(LooseMod.Converter.Annotation::class,
+                LooseMod.Converter(looseMods))
 
             val objectModifiers = klaxon.parseArray<ObjectModifier>(File(directory, "omod.json").inputStream())!!
             klaxon = klaxon.fieldConverter(ObjectModifier.Converter.Annotation::class,

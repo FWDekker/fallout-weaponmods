@@ -1,16 +1,6 @@
 package com.fwdekker.fallout.weaponmods
 
 import com.beust.klaxon.JsonValue
-import com.fwdekker.fallout.weaponmods.wiki.Article
-import com.fwdekker.fallout.weaponmods.wiki.Category
-import com.fwdekker.fallout.weaponmods.wiki.CraftingTable
-import com.fwdekker.fallout.weaponmods.wiki.Section
-import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
-import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
-import com.fwdekker.fallout.weaponmods.xedit.CraftableObject
-import com.fwdekker.fallout.weaponmods.xedit.GameDatabase
-import com.fwdekker.fallout.weaponmods.xedit.LooseMod
-import com.fwdekker.fallout.weaponmods.xedit.ObjectModifier
 import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
