@@ -1,5 +1,7 @@
 package com.fwdekker.fallout.weaponmods.xedit
 
+import com.beust.klaxon.Converter
+import com.beust.klaxon.JsonObject
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
@@ -34,6 +36,8 @@ data class GameDatabase(
                 .fieldConverter(FormID.Converter.Annotation::class, FormID.Converter())
                 .fieldConverter(Perk.Converter.Annotation::class, Perk.Converter(perks))
                 .fieldConverter(Model.Converter.Annotation::class, Model.Converter(models))
+                .fieldConverter(CraftableObject.ConditionConverter.Annotation::class,
+                    CraftableObject.ConditionConverter(perks))
 
             val wikiWeapons =
                 klaxon.parseArray<com.fwdekker.fallout.weaponmods.wiki.Weapon>(File("weapons.json").inputStream())!!
@@ -41,6 +45,8 @@ data class GameDatabase(
             // TODO throw exceptions
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
             klaxon = klaxon.fieldConverter(Component.Converter.Annotation::class, Component.Converter(components))
+            klaxon = klaxon.fieldConverter(CraftableObject.ComponentConverter.Annotation::class,
+                CraftableObject.ComponentConverter(components))
 
             val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
             klaxon = klaxon.fieldConverter(Weapon.Converter.Annotation::class, Weapon.Converter(wikiWeapons))
@@ -90,7 +96,8 @@ data class Component(
     class Converter(val components: List<Component>) : com.beust.klaxon.Converter {
         override fun canConvert(cls: Class<*>) = cls == Component::class.java
 
-        override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
+        override fun fromJson(jv: JsonValue) =
+            components.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
         override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
 
@@ -126,7 +133,8 @@ data class LooseMod(
     class Converter(val looseMods: List<LooseMod>) : com.beust.klaxon.Converter {
         override fun canConvert(cls: Class<*>) = cls == LooseMod::class.java
 
-        override fun fromJson(jv: JsonValue) = looseMods.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
+        override fun fromJson(jv: JsonValue) =
+            looseMods.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
         override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
 
@@ -203,32 +211,58 @@ data class CraftableObject(
     val editorID: String,
     @ObjectModifier.Converter.Annotation
     val createdMod: ObjectModifier? = null,
-    val components: List<Component>,
-    val conditions: List<Condition>
+    @ComponentConverter.Annotation
+    val components: Map<Component, Int>,
+    @ConditionConverter.Annotation
+    val conditions: Map<Perk, Int> // TODO rename to "requirements"
 ) {
-    /**
-     * A component that is required to craft the object.
-     *
-     * @property component the editor ID of the component required to craft the object
-     * @property count the amount of the component required to craft the object
-     */
-    data class Component(
-        @com.fwdekker.fallout.weaponmods.xedit.Component.Converter.Annotation
-        val component: com.fwdekker.fallout.weaponmods.xedit.Component? = null,
-        val count: Int
-    )
+    class ComponentConverter(val components: List<Component>) : Converter {
+        override fun canConvert(cls: Class<*>) = cls == Map::class.java
 
-    /**
-     * Indicates a [Perk] and its corresponding rank that are required to craft the weapon mod.
-     *
-     * @property perk the perk
-     * @property rank the rank of the perk
-     */
-    data class Condition(
-        @Perk.Converter.Annotation
-        val perk: Perk,
-        val rank: Int
-    )
+        override fun fromJson(jv: JsonValue): Map<Component, Int> {
+            val ja = jv.array!!
+
+            return ja.filterIsInstance<JsonObject>()
+                .filter { jo -> components.any { it.editorID == jo.string("component") } } // TODO log if filtered out
+                .map { jo ->
+                    Pair(
+                        components.single { it.editorID == jo.string("component") },
+                        jo.int("count")!!
+                    )
+                }
+                .toMap()
+        }
+
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
+
+    class ConditionConverter(val perks: List<Perk>) : Converter {
+        override fun canConvert(cls: Class<*>) = cls == Map::class.java
+
+        override fun fromJson(jv: JsonValue): Map<Perk, Int> {
+            val ja = jv.array!!
+
+            return ja.filterIsInstance<JsonObject>()
+                .map { jo ->
+                    Pair(
+                        perks.singleOrNull { it.editorID == jo.string("perk") }
+                            ?: error("Could not find perk `${jo.string("perk")}`."),
+                        jo.int("rank")!!
+                    )
+                }
+                .toMap()
+        }
+
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
 }
 
 /**

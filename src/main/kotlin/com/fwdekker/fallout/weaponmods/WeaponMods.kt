@@ -166,9 +166,9 @@ class WeaponSelection(
 
     private fun createProductionTable(mod: WeaponMod): String {
         return CraftingTable(
-            materials = mod.recipe.components.map { it.component!!.name to it.count },
+            materials = mod.recipe.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
-            perks = mod.recipe.conditions.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
+            perks = mod.recipe.conditions.map { Pair(it.key.name, it.value) }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
         ).toString()
     }
