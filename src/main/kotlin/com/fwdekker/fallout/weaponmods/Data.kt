@@ -42,7 +42,8 @@ data class GameDatabase(
                 File(wikiDirectory, "weapons.json"),
                 listOf(fileConverter, formIDConverter)
             )
-            val wikiWeaponConverter = WikiWeapon.LinkConverter(wikiWeapons)
+            val formIDToKeywordConverter = WikiWeapon.FormIDToKeywordConverter(wikiWeapons)
+            val formIDToLinkConverter = WikiWeapon.FormIDToLinkConverter(wikiWeapons)
 
             val components = readList<Component>(
                 File(xEditDirectory, "cmpo.json"),
@@ -52,14 +53,8 @@ data class GameDatabase(
 
             val weapons = readList<Weapon>(
                 File(xEditDirectory, "weap.json"),
-                listOf(fileConverter, formIDConverter)
+                listOf(fileConverter, formIDConverter, formIDToKeywordConverter, formIDToLinkConverter)
             )
-            weapons.forEach { weapon ->
-                // TODO do this while reading JSON
-                val wikiWeapon = wikiWeapons.singleOrNull { it.formID == weapon.formID }
-                weapon.wikiLink = wikiWeapon?.link
-                weapon.keyword = wikiWeapon?.keyword
-            }
             val weaponConverter = Weapon.Converter(weapons)
 
             val looseMods = readList<LooseMod>(
@@ -167,11 +162,24 @@ data class WikiWeapon(
     val link = Link(page, name)
 
 
-    class LinkConverter(val weapons: List<WikiWeapon>) : FieldConverter(Annotation::class) {
+    class FormIDToKeywordConverter(val weapons: List<WikiWeapon>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
 
         override fun fromJson(jv: JsonValue) =
-            weapons.singleOrNull { it.keyword.equals(jv.string, ignoreCase = true) }?.link
+            weapons.singleOrNull { it.formID == FormID.fromString(jv.string!!) }?.keyword
+
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
+
+    class FormIDToLinkConverter(val weapons: List<WikiWeapon>) : FieldConverter(Annotation::class) {
+        override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
+
+        override fun fromJson(jv: JsonValue) =
+            weapons.singleOrNull { it.formID == FormID.fromString(jv.string!!) }?.link
 
         override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
@@ -428,10 +436,12 @@ data class Weapon(
     val formID: FormID,
     val editorID: String,
     val name: String,
-    @Json(ignored = true) // TODO Find way to instantiate these fields directly
-    var keyword: String? = null,
-    @Json(ignored = true)
-    var wikiLink: Link? = null,
+    @Json(name = "formID")
+    @WikiWeapon.FormIDToKeywordConverter.Annotation
+    val keyword: String? = null,
+    @Json(name = "formID")
+    @WikiWeapon.FormIDToLinkConverter.Annotation
+    val wikiLink: Link? = null,
     val speed: Double,
     val reloadSpeed: Double,
     val reach: Double,
