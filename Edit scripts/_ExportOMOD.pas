@@ -48,7 +48,7 @@ begin
     outputLines.Add('  "name": "'        + GetEditValue(ElementBySignature(e, 'FULL'))                                                      + '",');
     outputLines.Add('  "description": "' + EscapeJsonString(GetEditValue(ElementBySignature(e, 'DESC')))                                    + '",');
     outputLines.Add('  "looseMod": "'    + NameToEditorID(GetEditValue(ElementBySignature(e, 'LNAM')))                                      + '",');
-    outputLines.Add('  "weapon":     "'  + EscapeJsonString(NameToEditorID(GetEditValue(ElementByIndex(ElementBySignature(e, 'MNAM'), 0)))) + '",');
+    outputLines.Add('  "weapon": "'      + EscapeJsonString(NameToEditorID(GetEditValue(ElementByIndex(ElementBySignature(e, 'MNAM'), 0)))) + '",');
 
 
     // Effects

@@ -245,7 +245,9 @@ data class Model(
     class Converter(val models: List<Model>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Model::class.java
 
-        override fun fromJson(jv: JsonValue) = models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
+        override fun fromJson(jv: JsonValue) =
+            models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
+                ?: error("Could not find model `${jv.string}`.")
 
         override fun toJson(value: Any) = error("Cannot convert to JSON.")
 

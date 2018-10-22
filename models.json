@@ -6,5 +6,9 @@
   {
     "model": "Props\\ModsPartBox\\ModCrate.nif",
     "image": "Fo4 item Mod type B.png"
+  },
+  {
+    "model": "DLC01\\SetDressing\\MachineKit\\RoboBrainActivator\\RoboBrainActivator01.nif",
+    "image": "FO4 Jezebel's head.png"
   }
 ]
