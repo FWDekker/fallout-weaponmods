@@ -125,16 +125,18 @@ class WeaponSelection(
         if (games.size == 1 && games[0] == gameDatabase.files.single { it.fileName == "Fallout4.esm" })
             "''${games[0].link}''"
         else if (games.size == 2 && games.contains(gameDatabase.files.single { it.fileName == "Fallout4.esm" }))
-            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link}'' and its [[Fallout 4 add-ons|add-on]] ''${games.asSequence()
-                .filterNot { it == gameDatabase.files.single { it.fileName == "Fallout4.esm" } }
+            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link
+            }'' and its [[Fallout 4 add-ons|add-on]] ''${games.asSequence()
+                .filterNot { it == gameDatabase.files.single { file -> file.fileName == "Fallout4.esm" } }
                 .first()
                 .link
             }''"
         else
-            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link}'' and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(
+            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link
+            }'' and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(
                 1)
                 .asSequence()
-                .filterNot { it == gameDatabase.files.single { it.fileName == "Fallout4.esm" } }
+                .filterNot { it == gameDatabase.files.single { file -> file.fileName == "Fallout4.esm" } }
                 .map { it.link }
                 .joinToString(", ") { "''$it''" }
             } and ''${games.last().link}''"

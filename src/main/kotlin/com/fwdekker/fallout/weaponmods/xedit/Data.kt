@@ -27,6 +27,7 @@ data class GameDatabase(
 ) {
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
+            // TODO clean up
             val files = Klaxon().parseArray<ESM>(File("esms.json").inputStream())!!
             val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
             val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
