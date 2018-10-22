@@ -245,9 +245,7 @@ data class Model(
     class Converter(val models: List<Model>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Model::class.java
 
-        override fun fromJson(jv: JsonValue) =
-            models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
-                ?: error("Could not find model `${jv.string}`.")
+        override fun fromJson(jv: JsonValue) = models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
 
         override fun toJson(value: Any) = error("Cannot convert to JSON.")
 
@@ -495,7 +493,8 @@ data class Weapon(
     val attackDelay: Double,
     val weight: Double,
     val value: Int,
-    val baseDamage: Int
+    val baseDamage: Int,
+    val keywords: List<String>
 ) {
     class Converter(val weapons: List<Weapon>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
