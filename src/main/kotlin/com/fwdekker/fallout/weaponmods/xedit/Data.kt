@@ -13,6 +13,11 @@ import java.io.File
 
 // TODO document this
 data class GameDatabase(
+    val esms: List<ESM>,
+    val wikiWeapons: List<com.fwdekker.fallout.weaponmods.wiki.Weapon>,
+    val models: List<Model>,
+    val perks: List<Perk>,
+
     val looseMods: List<LooseMod>,
     val objectModifiers: List<ObjectModifier>,
     val craftableObjects: List<CraftableObject>,
@@ -26,6 +31,12 @@ data class GameDatabase(
                 .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
                 .fieldConverter(PerkConverter.Annotation::class, PerkConverter())
                 .fieldConverter(ModelConverter.Annotation::class, ModelConverter())
+
+            val esms = klaxon.parseArray<ESM>(File("esms.json").inputStream())!!
+            val wikiWeapons =
+                klaxon.parseArray<com.fwdekker.fallout.weaponmods.wiki.Weapon>(File("weapons.json").inputStream())!!
+            val models = klaxon.parseArray<Model>(File("models.json").inputStream())!!
+            val perks = klaxon.parseArray<Perk>(File("perks.json").inputStream())!!
 
             // TODO throw exceptions
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
@@ -43,7 +54,18 @@ data class GameDatabase(
 
             val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
 
-            return GameDatabase(looseMods, objectModifiers, craftableObjects, components, weapons)
+            return GameDatabase(
+                esms,
+                wikiWeapons,
+                models,
+                perks,
+
+                looseMods,
+                objectModifiers,
+                craftableObjects,
+                components,
+                weapons
+            )
         }
     }
 }
