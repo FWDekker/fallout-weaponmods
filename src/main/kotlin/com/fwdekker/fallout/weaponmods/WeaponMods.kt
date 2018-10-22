@@ -23,7 +23,7 @@ data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
     }
 
 
-    class Converter : com.beust.klaxon.Converter {
+    class Converter : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == FormID::class.java
 
         override fun fromJson(jv: JsonValue) = FormID.fromString(jv.string!!)
@@ -225,7 +225,7 @@ fun main(args: Array<String>) {
     print("Enter JSON location: ")
     val databaseLocation = readLine()
         ?: logger.error { "No location was entered." }.let { exitProcess(-1) }
-    val database = GameDatabase.fromDirectory(File(databaseLocation))
+    val database = GameDatabase.fromDirectory(File("."), File(databaseLocation))
         ?: logger.error { "Failed to read database." }.let { exitProcess(-1) }
 
     while (true) {
