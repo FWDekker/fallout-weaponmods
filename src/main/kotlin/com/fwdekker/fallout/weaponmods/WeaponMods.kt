@@ -14,7 +14,6 @@ import com.fwdekker.fallout.weaponmods.xedit.ObjectModifier
 import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
-import com.fwdekker.fallout.weaponmods.xedit.Weapon as XEditWeapon
 
 
 /**
