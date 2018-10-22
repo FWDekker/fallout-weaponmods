@@ -3,7 +3,6 @@ package com.fwdekker.fallout.weaponmods
 import com.fwdekker.fallout.weaponmods.wiki.Article
 import com.fwdekker.fallout.weaponmods.wiki.Category
 import com.fwdekker.fallout.weaponmods.wiki.CraftingTable
-import com.fwdekker.fallout.weaponmods.wiki.ESM
 import com.fwdekker.fallout.weaponmods.wiki.Section
 import com.fwdekker.fallout.weaponmods.wiki.WeaponModEffectTable
 import com.fwdekker.fallout.weaponmods.wiki.WikiTemplate
@@ -79,7 +78,7 @@ data class WeaponMod(
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
 
-            val xEditWeapon = database.weapons.single { it.formID == objectModifier.weapon.formID }
+            val xEditWeapon = database.weapons.single { it.formID == objectModifier.weapon!!.formID }
 
             return WeaponMod(
                 looseMod,
@@ -91,9 +90,14 @@ data class WeaponMod(
     }
 }
 
-class WeaponSelection(private val modName: String, private val weaponMods: List<WeaponMod>) {
+class WeaponSelection(
+    private val gameDatabase: GameDatabase, // TODO remove database parameter
+    private val modName: String,
+    private val weaponMods: List<WeaponMod>
+) {
     private val image = weaponMods
-        .groupingBy { it.item.model.image }
+        .filterNot { it.item.model == null }
+        .groupingBy { it.item.model!!.image } // TODO remove !!
         .eachCount().entries
         .maxBy { it.value }?.key
         ?: "" // TODO log empty image
@@ -104,18 +108,19 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         .sortedBy { it.name }
 
     private val appearanceString = // TODO clean up
-        if (games.size == 1 && games[0] == ESM.get("Fallout4.esm"))
+        if (games.size == 1 && games[0] == gameDatabase.files.single { it.fileName == "Fallout4.esm" })
             "''${games[0].link}''"
-        else if (games.size == 2 && games.contains(ESM.get("Fallout4.esm")))
-            "''${ESM.get("Fallout4.esm")!!.link}'' and its [[Fallout 4 add-ons|add-on]] ''${games.asSequence()
-                .filterNot { it == ESM.get("Fallout4.esm") }
+        else if (games.size == 2 && games.contains(gameDatabase.files.single { it.fileName == "Fallout4.esm" }))
+            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link}'' and its [[Fallout 4 add-ons|add-on]] ''${games.asSequence()
+                .filterNot { it == gameDatabase.files.single { it.fileName == "Fallout4.esm" } }
                 .first()
                 .link
             }''"
         else
-            "''${ESM.get("Fallout4.esm")!!.link}'' and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(1)
+            "''${gameDatabase.files.single { it.fileName == "Fallout4.esm" }.link}'' and its [[Fallout 4 add-ons|add-ons]] ${games.dropLast(
+                1)
                 .asSequence()
-                .filterNot { it == ESM.get("Fallout4.esm") }
+                .filterNot { it == gameDatabase.files.single { it.fileName == "Fallout4.esm" } }
                 .map { it.link }
                 .joinToString(", ") { "''$it''" }
             } and ''${games.last().link}''"
@@ -130,7 +135,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.effects.weapon.link.toString(capitalize = true) },
+                "modifies" to weaponMods.joinToString("<br />") { it.effects.weapon!!.link.toString(capitalize = true) },
                 "value" to namedAggregation { it.item.value.toString() },
                 "weight" to namedAggregation { it.item.weight.toString() },
                 "baseid" to namedAggregation { it.item.formID.toString(multiline = false) }
@@ -147,7 +152,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
 
     private fun createProductionTable(mod: WeaponMod): String {
         return CraftingTable(
-            materials = mod.recipe.components.map { it.component.name to it.count },
+            materials = mod.recipe.components.map { it.component!!.name to it.count },
             workspace = "[[Weapons workbench]]",
             perks = mod.recipe.conditions.map { Pair(it.perk.name, it.rank) }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
@@ -162,7 +167,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
                 "",
                 subsections = weaponMods.map { weaponMod ->
                     Section(
-                        weaponMod.effects.weapon.link.toString(capitalize = true),
+                        weaponMod.effects.weapon!!.link.toString(capitalize = true),
                         createProductionTable(weaponMod),
                         level = 3
                     )
@@ -199,7 +204,7 @@ class WeaponSelection(private val modName: String, private val weaponMods: List<
         return if (weaponMods.map(property).distinct().size == 1)
             property(weaponMods[0]) // TODO check if empty
         else
-            weaponMods.joinToString("<br />") { "${property(it)} (${it.effects.weapon.name})" }
+            weaponMods.joinToString("<br />") { "${property(it)} (${it.effects.weapon!!.name})" }
     }
 }
 
@@ -230,13 +235,13 @@ private fun launch(database: GameDatabase, modName: String) {
         .toList()
     val weaponMods = looseMods
         .mapNotNull { WeaponMod.fromLooseMod(it, database) }
-        .sortedBy { it.effects.weapon.name }
+        .sortedBy { it.effects.weapon!!.name }
         .toList()
     if (weaponMods.isEmpty()) {
         logger.warn { "No weapon mods by the name `$modName` were found." }
         return
     }
 
-    val selection = WeaponSelection(modName, weaponMods)
+    val selection = WeaponSelection(database, modName, weaponMods)
     println(selection.createPage().toString())
 }

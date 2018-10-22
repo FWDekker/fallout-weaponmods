@@ -13,7 +13,7 @@ import java.io.File
 
 // TODO document this
 data class GameDatabase(
-    val esms: List<ESM>,
+    val files: List<ESM>,
     val wikiWeapons: List<com.fwdekker.fallout.weaponmods.wiki.Weapon>,
     val models: List<Model>,
     val perks: List<Perk>,
@@ -26,24 +26,25 @@ data class GameDatabase(
 ) {
     companion object : KLogging() {
         fun fromDirectory(directory: File): GameDatabase? {
-            var klaxon = Klaxon()
-                .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
-                .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
-                .fieldConverter(PerkConverter.Annotation::class, PerkConverter())
-                .fieldConverter(ModelConverter.Annotation::class, ModelConverter())
+            val files = Klaxon().parseArray<ESM>(File("esms.json").inputStream())!!
+            val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
+            val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
 
-            val esms = klaxon.parseArray<ESM>(File("esms.json").inputStream())!!
+            var klaxon = Klaxon()
+                .fieldConverter(ESMConverter.Annotation::class, ESMConverter(files))
+                .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
+                .fieldConverter(PerkConverter.Annotation::class, PerkConverter(perks))
+                .fieldConverter(ModelConverter.Annotation::class, ModelConverter(models))
+
             val wikiWeapons =
                 klaxon.parseArray<com.fwdekker.fallout.weaponmods.wiki.Weapon>(File("weapons.json").inputStream())!!
-            val models = klaxon.parseArray<Model>(File("models.json").inputStream())!!
-            val perks = klaxon.parseArray<Perk>(File("perks.json").inputStream())!!
 
             // TODO throw exceptions
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
             klaxon = klaxon.fieldConverter(ComponentConverter.Annotation::class, ComponentConverter(components))
 
             val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
-            klaxon = klaxon.fieldConverter(WeaponConverter.Annotation::class, WeaponConverter())
+            klaxon = klaxon.fieldConverter(WeaponConverter.Annotation::class, WeaponConverter(wikiWeapons))
 
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
             klaxon = klaxon.fieldConverter(LooseModConverter.Annotation::class, LooseModConverter(looseMods))
@@ -55,7 +56,7 @@ data class GameDatabase(
             val craftableObjects = klaxon.parseArray<CraftableObject>(File(directory, "cobj.json").inputStream())!!
 
             return GameDatabase(
-                esms,
+                files,
                 wikiWeapons,
                 models,
                 perks,
@@ -83,10 +84,12 @@ class FormIDConverter : Converter {
     annotation class Annotation
 }
 
-class ESMConverter : Converter {
+class ESMConverter(val files: List<ESM>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == ESM::class.java
 
-    override fun fromJson(jv: JsonValue) = ESM.get(jv.string!!)!!
+    override fun fromJson(jv: JsonValue) =
+        files.singleOrNull { it.fileName.equals(jv.string, ignoreCase = true) }
+            ?: error("Could not find ESM `${jv.string}`.")
 
     override fun toJson(value: Any) = "\"${(value as ESM).fileName}\""
 
@@ -98,7 +101,7 @@ class ESMConverter : Converter {
 class LooseModConverter(val looseMods: List<LooseMod>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == LooseMod::class.java
 
-    override fun fromJson(jv: JsonValue) = looseMods.singleOrNull { it.editorID == jv.string }
+    override fun fromJson(jv: JsonValue) = looseMods.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
     override fun toJson(value: Any) = "\"${(value as LooseMod).editorID}\""
 
@@ -110,7 +113,8 @@ class LooseModConverter(val looseMods: List<LooseMod>) : Converter {
 class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == ObjectModifier::class.java
 
-    override fun fromJson(jv: JsonValue) = objectModifiers.singleOrNull { it.editorID == jv.string }
+    override fun fromJson(jv: JsonValue) =
+        objectModifiers.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
     override fun toJson(value: Any) = "\"${(value as ObjectModifier).editorID}\""
 
@@ -119,10 +123,12 @@ class ObjectModifierConverter(val objectModifiers: List<ObjectModifier>) : Conve
     annotation class Annotation
 }
 
-class PerkConverter : Converter {
+class PerkConverter(val perks: List<Perk>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Perk::class.java
 
-    override fun fromJson(jv: JsonValue) = Perk.get(jv.string!!)
+    override fun fromJson(jv: JsonValue) =
+        perks.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
+            ?: error("Could not find perk `${jv.string}`.")
 
     override fun toJson(value: Any) = "\"${(value as Perk).editorID}\""
 
@@ -131,10 +137,10 @@ class PerkConverter : Converter {
     annotation class Annotation
 }
 
-class ModelConverter : Converter {
+class ModelConverter(val models: List<Model>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Model::class.java
 
-    override fun fromJson(jv: JsonValue) = Model.get(jv.string!!)
+    override fun fromJson(jv: JsonValue) = models.singleOrNull { it.model.equals(jv.string, ignoreCase = true) }
 
     override fun toJson(value: Any) = "\"${(value as Model).model}\""
 
@@ -146,7 +152,7 @@ class ModelConverter : Converter {
 class ComponentConverter(val components: List<Component>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Component::class.java
 
-    override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID == jv.string!! }
+    override fun fromJson(jv: JsonValue) = components.singleOrNull { it.editorID.equals(jv.string, ignoreCase = true) }
 
     override fun toJson(value: Any) = "\"${(value as Component).editorID}\""
 
@@ -155,10 +161,10 @@ class ComponentConverter(val components: List<Component>) : Converter {
     annotation class Annotation
 }
 
-class WeaponConverter : Converter {
+class WeaponConverter(val weapons: List<com.fwdekker.fallout.weaponmods.wiki.Weapon>) : Converter {
     override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
 
-    override fun fromJson(jv: JsonValue) = com.fwdekker.fallout.weaponmods.wiki.Weapon.get(jv.string!!)
+    override fun fromJson(jv: JsonValue) = weapons.singleOrNull { it.keyword.equals(jv.string, ignoreCase = true) }
 
     override fun toJson(value: Any) = "\"${(value as com.fwdekker.fallout.weaponmods.wiki.Weapon).keyword}\""
 
@@ -206,7 +212,7 @@ data class LooseMod(
     val value: Int,
     val weight: Double,
     @ModelConverter.Annotation
-    val model: Model
+    val model: Model? = null
 )
 
 /**
@@ -229,9 +235,9 @@ data class ObjectModifier(
     val name: String,
     val description: String,
     @LooseModConverter.Annotation
-    val looseMod: LooseMod,
+    val looseMod: LooseMod? = null,
     @WeaponConverter.Annotation
-    val weapon: com.fwdekker.fallout.weaponmods.wiki.Weapon,
+    val weapon: com.fwdekker.fallout.weaponmods.wiki.Weapon? = null,
     val effects: List<Effect>
 ) {
     data class Effect(
@@ -261,7 +267,7 @@ data class CraftableObject(
     val formID: FormID,
     val editorID: String,
     @ObjectModifierConverter.Annotation
-    val createdMod: ObjectModifier,
+    val createdMod: ObjectModifier? = null,
     val components: List<Component>,
     val conditions: List<Condition>
 ) {
@@ -273,7 +279,7 @@ data class CraftableObject(
      */
     data class Component(
         @ComponentConverter.Annotation
-        val component: com.fwdekker.fallout.weaponmods.xedit.Component,
+        val component: com.fwdekker.fallout.weaponmods.xedit.Component? = null,
         val count: Int
     )
 

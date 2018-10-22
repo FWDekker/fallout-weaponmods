@@ -1,10 +1,8 @@
 package com.fwdekker.fallout.weaponmods.wiki
 
-import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
 import com.fwdekker.fallout.weaponmods.xedit.ESMConverter
 import com.fwdekker.fallout.weaponmods.xedit.FormIDConverter
-import java.io.File
 
 
 /**
@@ -26,23 +24,6 @@ data class ESM(
     val modCategory: String? = null
 ) {
     val link = Link(page, name)
-
-
-    companion object {
-        // TODO move JSON to suitable location (same for Weapons)
-        // TODO handle errors (same for Weapons)
-        private val esms = Klaxon().parseArray<ESM>(File("esms.json").inputStream())!!
-            .map { Pair(it.fileName.toLowerCase(), it) }
-            .toMap()
-
-        /**
-         * Returns the [ESM] corresponding to the given file name.
-         *
-         * @param fileName the name of the ESM file
-         * @return the [ESM] corresponding to the given file name
-         */
-        fun get(fileName: String) = esms[fileName.toLowerCase()]
-    }
 }
 
 /**
@@ -64,24 +45,6 @@ data class Weapon(
     val page: String
 ) {
     val link = Link(page, name)
-
-
-    companion object {
-        private val weapons = Klaxon()
-            .fieldConverter(ESMConverter.Annotation::class, ESMConverter())
-            .fieldConverter(FormIDConverter.Annotation::class, FormIDConverter())
-            .parseArray<Weapon>(File("weapons.json").inputStream())!!
-            .map { Pair(it.keyword.toLowerCase(), it) }
-            .toMap()
-
-        /**
-         * Returns the [Weapon] corresponding to the given keyword.
-         *
-         * @param keyword the keyword for the weapon in the Creation Kit
-         * @return the [Weapon] corresponding to the given keyword
-         */
-        fun get(keyword: String) = weapons[keyword.toLowerCase()]
-    }
 }
 
 /**
@@ -94,21 +57,7 @@ data class Weapon(
 data class Model(
     val model: String,
     val image: String
-) {
-    companion object {
-        private val models = Klaxon().parseArray<Model>(File("models.json").inputStream())!!
-            .map { Pair(it.model.toLowerCase(), it) }
-            .toMap()
-
-        /**
-         * Returns the [Model] corresponding to the given in-game model.
-         *
-         * @param model the path of the in-game model used for the weapon mod
-         * @return the [Model] corresponding to the given in-game model
-         */
-        fun get(model: String) = models[model.toLowerCase()]
-    }
-}
+)
 
 /**
  * Maps a perk editor ID to its rank and a Nukapedia page.
@@ -121,18 +70,4 @@ data class Perk(
     val editorID: String,
     val name: String,
     val page: String
-) {
-    companion object {
-        private val perks = Klaxon().parseArray<Perk>(File("perks.json").inputStream())!!
-            .map { Pair(it.editorID.toLowerCase(), it) }
-            .toMap()
-
-        /**
-         * Returns the [Perk] corresponding to the given editor ID.
-         *
-         * @param editorID the editor ID of the perk, excluding the rank
-         * @return the [Perk] corresponding to the given editor ID
-         */
-        fun get(editorID: String) = perks[editorID.toLowerCase()]
-    }
-}
+)

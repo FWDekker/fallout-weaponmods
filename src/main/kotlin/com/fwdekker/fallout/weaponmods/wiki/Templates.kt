@@ -99,7 +99,7 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
         "FDekker/TemplateSandbox",
         listOf(
             "1" to "row",
-            "weapon" to weaponMod.effects.weapon.name.capitalize(),
+            "weapon" to weaponMod.effects.weapon!!.name.capitalize(),
             "desc" to weaponMod.effects.description,
             "prefix" to weaponMod.effects.name,
             "damage" to "+1",
