@@ -1,52 +1,8 @@
 package com.fwdekker.fallout.weaponmods
 
-import com.beust.klaxon.JsonValue
 import mu.KLogging
 import java.io.File
 
-
-/**
- * A form ID.
- *
- * @property addOn whether the form ID is for an add-on
- * @property id the six-digit lowercase hexadecimal form ID
- */
-data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
-    if (addOn) "DLC ID" else "ID",
-    listOf("1" to id)
-) {
-    init {
-        require(Regex("[0-9a-fA-F]*").matches(id)) { "Form IDs must be hexadecimal." }
-        require(id.length == 6) { "Form IDs must have six hexadecimal numbers." }
-        require(id == id.toLowerCase()) { "Form IDs must be in lowercase." }
-    }
-
-
-    class Converter : FieldConverter(Annotation::class) {
-        override fun canConvert(cls: Class<*>) = cls == FormID::class.java
-
-        override fun fromJson(jv: JsonValue) = FormID.fromString(jv.string!!)
-
-        override fun toJson(value: Any) = "\"${(value as FormID).id}\""
-
-
-        @Target(AnnotationTarget.FIELD)
-        annotation class Annotation
-    }
-
-
-    companion object {
-        /**
-         * Transforms a string into a form ID.
-         *
-         * @param id a string
-         */
-        fun fromString(id: String): FormID {
-            val addOn = id.dropWhile { it == '0' }
-            return FormID(addOn.length > 6, addOn.takeLast(6).toLowerCase().padStart(6, '0'))
-        }
-    }
-}
 
 data class WeaponMod(
     val item: LooseMod,

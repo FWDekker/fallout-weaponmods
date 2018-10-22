@@ -106,6 +106,49 @@ abstract class FieldConverter(val annotationClass: KClass<out Annotation>) : Con
 
 
 /**
+ * A form ID.
+ *
+ * @property addOn whether the form ID is for an add-on
+ * @property id the six-digit lowercase hexadecimal form ID
+ */
+data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
+    if (addOn) "DLC ID" else "ID",
+    listOf("1" to id)
+) {
+    init {
+        require(Regex("[0-9a-fA-F]*").matches(id)) { "Form IDs must be hexadecimal." }
+        require(id.length == 6) { "Form IDs must have six hexadecimal numbers." }
+        require(id == id.toLowerCase()) { "Form IDs must be in lowercase." }
+    }
+
+
+    class Converter : FieldConverter(Annotation::class) {
+        override fun canConvert(cls: Class<*>) = cls == FormID::class.java
+
+        override fun fromJson(jv: JsonValue) = FormID.fromString(jv.string!!)
+
+        override fun toJson(value: Any) = "\"${(value as FormID).id}\""
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
+
+
+    companion object {
+        /**
+         * Transforms a string into a form ID.
+         *
+         * @param id a string
+         */
+        fun fromString(id: String): FormID {
+            val addOn = id.dropWhile { it == '0' }
+            return FormID(addOn.length > 6, addOn.takeLast(6).toLowerCase().padStart(6, '0'))
+        }
+    }
+}
+
+/**
  * An ESM as described on Nukapedia.
  *
  * Essentially, this class describes both the base game and its add-ons.
@@ -395,10 +438,10 @@ data class CraftableObject(
             val ja = jv.array!!
 
             return ja.filterIsInstance<JsonObject>()
+                .filter { jo -> perks.any { it.editorID == jo.string("perk") } } // TODO log if filtered
                 .map { jo ->
                     Pair(
-                        perks.singleOrNull { it.editorID == jo.string("perk") }
-                            ?: error("Could not find perk `${jo.string("perk")}`."),
+                        perks.single { it.editorID == jo.string("perk") },
                         jo.int("rank")!!
                     )
                 }
