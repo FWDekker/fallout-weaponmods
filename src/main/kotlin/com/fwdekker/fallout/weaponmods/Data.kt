@@ -10,8 +10,10 @@ import java.io.File
 import kotlin.reflect.KClass
 
 
-// TODO document this
+// TODO document GameDatabase
 // TODO document converters
+// TODO update data class documentation
+
 data class GameDatabase(
     val files: List<ESM>,
     val looseMods: List<LooseMod>,
@@ -19,8 +21,7 @@ data class GameDatabase(
     val craftableObjects: List<CraftableObject>
 ) {
     companion object : KLogging() {
-        fun fromDirectory(wikiDirectory: File, xEditDirectory: File): GameDatabase? {
-            // TODO clean up
+        fun fromDirectory(wikiDirectory: File, xEditDirectory: File): GameDatabase {
             require(wikiDirectory.exists()) { "Directory `${wikiDirectory.path}` does not exist." }
             require(wikiDirectory.isDirectory) { "`${wikiDirectory.path}` is not a directory." }
             require(xEditDirectory.exists()) { "Directory `${xEditDirectory.path}` does not exist." }
@@ -28,22 +29,31 @@ data class GameDatabase(
 
             val formIDConverter = FormID.Converter()
 
-            val files = dinges<ESM>(File(wikiDirectory, "esms.json"))
+            val files = readList<ESM>(File(wikiDirectory, "esms.json"))
             val fileConverter = ESM.Converter(files)
 
-            val models = dinges<Model>(File(wikiDirectory, "models.json"))
+            val models = readList<Model>(File(wikiDirectory, "models.json"))
             val modelConverter = Model.Converter(models)
 
-            val perks = dinges<Perk>(File(wikiDirectory, "perks.json"))
+            val perks = readList<Perk>(File(wikiDirectory, "perks.json"))
             val conditionMapConverter = CraftableObject.ConditionMapConverter(perks)
 
-            val wikiWeapons = dinges<WikiWeapon>(File(wikiDirectory, "weapons.json"), fileConverter, formIDConverter)
+            val wikiWeapons = readList<WikiWeapon>(
+                File(wikiDirectory, "weapons.json"),
+                listOf(fileConverter, formIDConverter)
+            )
             val wikiWeaponConverter = WikiWeapon.LinkConverter(wikiWeapons)
 
-            val components = dinges<Component>(File(xEditDirectory, "cmpo.json"), fileConverter, formIDConverter)
+            val components = readList<Component>(
+                File(xEditDirectory, "cmpo.json"),
+                listOf(fileConverter, formIDConverter)
+            )
             val componentMapConverter = CraftableObject.ComponentMapConverter(components)
 
-            val weapons = dinges<Weapon>(File(xEditDirectory, "weap.json"), fileConverter, formIDConverter)
+            val weapons = readList<Weapon>(
+                File(xEditDirectory, "weap.json"),
+                listOf(fileConverter, formIDConverter)
+            )
             weapons.forEach { weapon ->
                 // TODO do this while reading JSON
                 val wikiWeapon = wikiWeapons.singleOrNull { it.formID == weapon.formID }
@@ -52,16 +62,28 @@ data class GameDatabase(
             }
             val weaponConverter = Weapon.Converter(weapons)
 
-            val looseMods = dinges<LooseMod>(File(xEditDirectory, "misc.json"),
-                fileConverter, formIDConverter, modelConverter)
+            val looseMods = readList<LooseMod>(
+                File(xEditDirectory, "misc.json"),
+                listOf(fileConverter, formIDConverter, modelConverter)
+            )
             val looseModConverter = LooseMod.Converter(looseMods)
 
-            val objectModifiers = dinges<ObjectModifier>(File(xEditDirectory, "omod.json"),
-                fileConverter, formIDConverter, looseModConverter, weaponConverter)
+            val objectModifiers = readList<ObjectModifier>(
+                File(xEditDirectory, "omod.json"),
+                listOf(fileConverter, formIDConverter, looseModConverter, weaponConverter)
+            )
             val objectModifierConverter = ObjectModifier.Converter(objectModifiers)
 
-            val craftableObjects = dinges<CraftableObject>(File(xEditDirectory, "cobj.json"),
-                fileConverter, formIDConverter, objectModifierConverter, componentMapConverter, conditionMapConverter)
+            val craftableObjects = readList<CraftableObject>(
+                File(xEditDirectory, "cobj.json"),
+                listOf(
+                    fileConverter,
+                    formIDConverter,
+                    objectModifierConverter,
+                    componentMapConverter,
+                    conditionMapConverter
+                )
+            )
 
             return GameDatabase(
                 files,
@@ -72,7 +94,10 @@ data class GameDatabase(
         }
 
 
-        private inline fun <reified T> dinges(file: File, vararg fieldConverters: FieldConverter): List<T> {
+        private inline fun <reified T> readList(
+            file: File,
+            fieldConverters: List<FieldConverter> = emptyList()
+        ): List<T> {
             var klaxon = Klaxon()
             fieldConverters.forEach { klaxon = klaxon.fieldConverter(it.annotationClass, it) }
 
