@@ -14,7 +14,6 @@ import com.fwdekker.fallout.weaponmods.xedit.ObjectModifier
 import mu.KLogging
 import java.io.File
 import kotlin.system.exitProcess
-import com.fwdekker.fallout.weaponmods.wiki.Weapon as WikiWeapon
 import com.fwdekker.fallout.weaponmods.xedit.Weapon as XEditWeapon
 
 
@@ -64,14 +63,17 @@ data class FormID(val addOn: Boolean, val id: String) : WikiTemplate(
 data class WeaponMod(
     val item: LooseMod,
     val effects: ObjectModifier,
-    val recipe: CraftableObject,
-    val weaponData: com.fwdekker.fallout.weaponmods.xedit.Weapon
+    val recipe: CraftableObject
 ) {
     companion object : KLogging() {
         fun fromLooseMod(looseMod: LooseMod, database: GameDatabase): WeaponMod? {
             val objectModifier = database.objectModifiers.singleOrNull { it.looseMod == looseMod }
             if (objectModifier == null) {
                 logger.warn { "Could not create weapon mod with omod `${looseMod.editorID}`." }
+                return null
+            }
+            if (objectModifier.weapon?.wikiLink == null) {
+                logger.warn { "Could not create weapon mod with cobj `${objectModifier.editorID}`." }
                 return null
             }
 
@@ -81,24 +83,20 @@ data class WeaponMod(
                 return null
             }
 
-            return fromObjects(looseMod, objectModifier, craftableObject, database)
+            return fromObjects(looseMod, objectModifier, craftableObject)
         }
 
         private fun fromObjects(
             looseMod: LooseMod,
             objectModifier: ObjectModifier,
-            craftableObject: CraftableObject,
-            database: GameDatabase
+            craftableObject: CraftableObject
         ): WeaponMod {
             require(looseMod.file == objectModifier.file && objectModifier.file == craftableObject.file) { "?" }
-
-            val xEditWeapon = database.weapons.single { it.formID == objectModifier.weapon!!.formID }
 
             return WeaponMod(
                 looseMod,
                 objectModifier,
-                craftableObject,
-                xEditWeapon
+                craftableObject
             )
         }
     }
@@ -110,6 +108,7 @@ class WeaponSelection(
     private val weaponMods: List<WeaponMod>
 ) {
     private val image = weaponMods
+        .sortedBy { it.effects.weapon!!.wikiLink!!.text }
         .filterNot { it.item.model == null }
         .groupingBy { it.item.model!!.image } // TODO remove !!
         .eachCount().entries
@@ -151,7 +150,9 @@ class WeaponSelection(
                 "icon" to "",
                 "image" to image,
                 "effects" to "<!-- Variable -->", // TODO
-                "modifies" to weaponMods.joinToString("<br />") { it.effects.weapon!!.link.toString(capitalize = true) },
+                "modifies" to weaponMods
+                    .sortedBy { it.effects.weapon!!.wikiLink!!.text }
+                    .joinToString("<br />") { it.effects.weapon!!.wikiLink!!.toString(capitalize = true) },
                 "value" to namedAggregation { it.item.value.toString() },
                 "weight" to namedAggregation { it.item.weight.toString() },
                 "baseid" to namedAggregation { it.item.formID.toString(multiline = false) }
@@ -162,7 +163,7 @@ class WeaponSelection(
     private fun createEffects(): Section {
         return Section(
             "Effects",
-            WeaponModEffectTable(weaponMods).toString()
+            WeaponModEffectTable(weaponMods.sortedBy { it.effects.weapon!!.wikiLink!!.text }).toString()
         )
     }
 
@@ -181,13 +182,15 @@ class WeaponSelection(
         else
             Section("Production",
                 "",
-                subsections = weaponMods.map { weaponMod ->
-                    Section(
-                        weaponMod.effects.weapon!!.link.toString(capitalize = true),
-                        createProductionTable(weaponMod),
-                        level = 3
-                    )
-                })
+                subsections = weaponMods
+                    .sortedBy { it.effects.weapon!!.wikiLink!!.text }
+                    .map { weaponMod ->
+                        Section(
+                            weaponMod.effects.weapon!!.wikiLink!!.toString(capitalize = true),
+                            createProductionTable(weaponMod),
+                            level = 3
+                        )
+                    })
     }
 
     private fun createLocation(): Section {
@@ -220,7 +223,9 @@ class WeaponSelection(
         return if (weaponMods.map(property).distinct().size == 1)
             property(weaponMods[0]) // TODO check if empty
         else
-            weaponMods.joinToString("<br />") { "${property(it)} (${it.effects.weapon!!.name})" }
+            weaponMods
+                .sortedBy { it.effects.weapon!!.wikiLink!!.text }
+                .joinToString("<br />") { "${property(it)} (${it.effects.weapon!!.wikiLink!!.text})" }
     }
 }
 

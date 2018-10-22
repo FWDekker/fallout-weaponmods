@@ -2,6 +2,7 @@ package com.fwdekker.fallout.weaponmods.wiki
 
 import com.beust.klaxon.JsonValue
 import com.fwdekker.fallout.weaponmods.FormID
+import com.fwdekker.fallout.weaponmods.xedit.Weapon
 
 
 /**
@@ -49,7 +50,7 @@ data class ESM(
  * @property page the page on Nukapedia that describes the weapon
  * @property link a [Link] object for this weapon
  */
-data class Weapon(
+data class WikiWeapon(
     @ESM.Converter.Annotation
     val file: ESM,
     val keyword: String,
@@ -59,6 +60,20 @@ data class Weapon(
     val page: String
 ) {
     val link = Link(page, name)
+
+
+    class LinkConverter(val weapons: List<WikiWeapon>) : com.beust.klaxon.Converter {
+        override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
+
+        override fun fromJson(jv: JsonValue) =
+            weapons.singleOrNull { it.keyword.equals(jv.string, ignoreCase = true) }?.link
+
+        override fun toJson(value: Any) = error("Cannot convert to JSON.")
+
+
+        @Target(AnnotationTarget.FIELD)
+        annotation class Annotation
+    }
 }
 
 /**

@@ -1,13 +1,16 @@
 package com.fwdekker.fallout.weaponmods.xedit
 
 import com.beust.klaxon.Converter
+import com.beust.klaxon.Json
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.fwdekker.fallout.weaponmods.FormID
 import com.fwdekker.fallout.weaponmods.wiki.ESM
+import com.fwdekker.fallout.weaponmods.wiki.Link
 import com.fwdekker.fallout.weaponmods.wiki.Model
 import com.fwdekker.fallout.weaponmods.wiki.Perk
+import com.fwdekker.fallout.weaponmods.wiki.WikiWeapon
 import mu.KLogging
 import java.io.File
 
@@ -15,7 +18,7 @@ import java.io.File
 // TODO document this
 data class GameDatabase(
     val files: List<ESM>,
-    val wikiWeapons: List<com.fwdekker.fallout.weaponmods.wiki.Weapon>,
+    val wikiWeapons: List<WikiWeapon>,
     val models: List<Model>,
     val perks: List<Perk>,
 
@@ -40,8 +43,9 @@ data class GameDatabase(
                 .fieldConverter(CraftableObject.ConditionConverter.Annotation::class,
                     CraftableObject.ConditionConverter(perks))
 
-            val wikiWeapons =
-                klaxon.parseArray<com.fwdekker.fallout.weaponmods.wiki.Weapon>(File("weapons.json").inputStream())!!
+            val wikiWeapons = klaxon.parseArray<WikiWeapon>(File("weapons.json").inputStream())!!
+            klaxon = klaxon
+                .fieldConverter(WikiWeapon.LinkConverter.Annotation::class, WikiWeapon.LinkConverter(wikiWeapons))
 
             // TODO throw exceptions
             val components = klaxon.parseArray<Component>(File(directory, "cmpo.json").inputStream())!!
@@ -50,7 +54,12 @@ data class GameDatabase(
                 CraftableObject.ComponentConverter(components))
 
             val weapons = klaxon.parseArray<Weapon>(File(directory, "weap.json").inputStream())!!
-            klaxon = klaxon.fieldConverter(Weapon.Converter.Annotation::class, Weapon.Converter(wikiWeapons))
+            weapons.forEach { weapon ->
+                val wikiWeapon = wikiWeapons.singleOrNull { it.formID == weapon.formID }
+                weapon.wikiLink = wikiWeapon?.link
+                weapon.keyword = wikiWeapon?.keyword
+            }
+            klaxon = klaxon.fieldConverter(Weapon.Converter.Annotation::class, Weapon.Converter(weapons))
 
             val looseMods = klaxon.parseArray<LooseMod>(File(directory, "misc.json").inputStream())!!
             klaxon = klaxon.fieldConverter(LooseMod.Converter.Annotation::class, LooseMod.Converter(looseMods))
@@ -167,7 +176,7 @@ data class ObjectModifier(
     @LooseMod.Converter.Annotation
     val looseMod: LooseMod? = null,
     @Weapon.Converter.Annotation
-    val weapon: com.fwdekker.fallout.weaponmods.wiki.Weapon? = null,
+    val weapon: Weapon? = null, // TODO rename to "weaponKeyword"
     val effects: List<Effect>
 ) {
     data class Effect(
@@ -289,6 +298,10 @@ data class Weapon(
     val formID: FormID,
     val editorID: String,
     val name: String,
+    @Json(ignored = true) // TODO Find way to instantiate these fields directly
+    var keyword: String? = null,
+    @Json(ignored = true)
+    var wikiLink: Link? = null,
     val speed: Double,
     val reloadSpeed: Double,
     val reach: Double,
@@ -299,7 +312,7 @@ data class Weapon(
     val value: Int,
     val baseDamage: Int
 ) {
-    class Converter(val weapons: List<com.fwdekker.fallout.weaponmods.wiki.Weapon>) : com.beust.klaxon.Converter {
+    class Converter(val weapons: List<Weapon>) : com.beust.klaxon.Converter {
         override fun canConvert(cls: Class<*>) = cls == Weapon::class.java
 
         override fun fromJson(jv: JsonValue) = weapons.singleOrNull { it.keyword.equals(jv.string, ignoreCase = true) }
