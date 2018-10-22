@@ -61,32 +61,49 @@ class CraftingTable(
     perks: List<Pair<String, Int>>,
     products: List<Pair<String, Int>>
 ) : WikiTemplate(
-    // TODO clean up these parameters
     "Crafting table",
     listOf<Pair<String, String>>() +
-        listOf("type" to type) +
-        materials
-            .sortedBy { it.first }
-            .mapIndexed { i, b -> Pair(i + 1, b) }
-            .flatMap { b ->
-                listOf(
-                    Pair("material${b.first}", b.second.first),
-                    Pair("material#${b.first}", b.second.second.toString())
-                )
-            } +
+        Pair("type", type) +
+        formatMaterials(materials) +
         Pair("workspace", workspace) +
-        perks.sortedBy { it.first }.mapIndexed { i, pair -> "perk${i + 1}" to "${pair.first} (${pair.second})" } +
-        products
-            .sortedBy { it.first }
-            .mapIndexed { i, b -> Pair(i + 1, b) }
-            .flatMap { b ->
-                listOf(
-                    Pair("product${b.first}", b.second.first),
-                    Pair("product#${b.first}", b.second.second.toString())
-                )
-            }
+        formatPerks(perks) +
+        formatProducts(products)
 ) {
-    override fun toString() = super.toString() // This is necessary for some reason
+    companion object {
+        private fun formatMaterials(materials: List<Pair<String, Int>>): List<Pair<String, String>> {
+            return materials
+                .sortedBy { it.first }
+                .flatMapIndexed { i, material ->
+                    listOf(
+                        Pair("material${i + 1}", material.first),
+                        Pair("material#${i + 1}", material.second.toString())
+                    )
+                }
+        }
+
+        private fun formatPerks(perks: List<Pair<String, Int>>): List<Pair<String, String>> {
+            return perks
+                .sortedBy { it.first }
+                .mapIndexed { i, pair -> "perk${i + 1}" to "${pair.first} (${pair.second})" }
+        }
+
+        private fun formatProducts(products: List<Pair<String, Int>>): List<Pair<String, String>> {
+            return products
+                .sortedBy { it.first }
+                .flatMapIndexed { i, product ->
+                    listOf(
+                        Pair("product${i + 1}", product.first),
+                        Pair("product#${i + 1}", product.second.toString())
+                    )
+                }
+        }
+
+
+        private fun <T, R> Iterable<T>.flatMapIndexed(transform: (index: Int, T) -> Iterable<R>): List<R> {
+            return mapIndexed { index, t -> Pair(index, t) }
+                .flatMap { indexedT -> transform(indexedT.first, indexedT.second) }
+        }
+    }
 }
 
 // TODO document this
@@ -106,14 +123,7 @@ class WeaponModEffectTable(val weaponMods: List<WeaponMod>) {
             "spread" to "+4",
             "magazine" to "+5",
             "weight" to "+6",
-            "value" to weaponMod.effects.effects
-                .filter { it.property == "Value" }
-                .map { (it.value1 as Double) * weaponMod.effects.weapon.value }
-                .map { it.toInt() /* truncates */ }
-                .sum().let {
-                    if (it > 0) "+$it"
-                    else "$it"
-                }
+            "value" to "+7"
         )
     )
 

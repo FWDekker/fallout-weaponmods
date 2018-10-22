@@ -3,7 +3,6 @@ package com.fwdekker.fallout.weaponmods
 import com.beust.klaxon.JsonValue
 import mu.KLogging
 import java.io.File
-import kotlin.system.exitProcess
 
 
 /**
@@ -160,7 +159,7 @@ class WeaponSelection(
         return CraftingTable(
             materials = mod.recipe.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
-            perks = mod.recipe.conditions.map { Pair(it.key.name, it.value) }, // TODO insert link to perk
+            perks = mod.recipe.conditions.map { it.key.name to it.value }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
         ).toString()
     }
@@ -224,16 +223,17 @@ fun main(args: Array<String>) {
 
     print("Enter JSON location: ")
     val databaseLocation = readLine()
-        ?: logger.error { "No location was entered." }.let { exitProcess(-1) }
     val database = GameDatabase.fromDirectory(File("."), File(databaseLocation))
-        ?: logger.error { "Failed to read database." }.let { exitProcess(-1) }
 
     while (true) {
         print("Enter weapon mod name: ")
-        val targetName = readLine()
-            ?: logger.error { "No weapon mod was entered." }.let { exitProcess(-1) }
+        val modName = readLine()
+        if (modName == null) {
+            logger.error { "No weapon mod was entered." }
+            continue
+        }
 
-        launch(database, targetName)
+        launch(database, modName)
     }
 }
 
