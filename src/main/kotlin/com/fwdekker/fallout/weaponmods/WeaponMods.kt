@@ -159,7 +159,7 @@ class WeaponSelection(
         return CraftingTable(
             materials = mod.recipe.components.map { it.key.name to it.value },
             workspace = "[[Weapons workbench]]",
-            perks = mod.recipe.conditions.map { it.key.name to it.value }, // TODO insert link to perk
+            perks = mod.recipe.requirements.map { it.key.name to it.value }, // TODO insert link to perk
             products = listOf(modName.capitalize() to 1)
         ).toString()
     }

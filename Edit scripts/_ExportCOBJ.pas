@@ -64,7 +64,7 @@ begin
 
 
     // Conditions
-    outputLines.Add('  "conditions": [');
+    outputLines.Add('  "requirements": [');
 
     conditions := ElementByName(e, 'Conditions');
     for i := 0 to ElementCount(conditions) - 1 do

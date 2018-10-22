@@ -36,7 +36,7 @@ data class GameDatabase(
             val modelConverter = Model.Converter(models)
 
             val perks = readList<Perk>(File(wikiDirectory, "perks.json"))
-            val conditionMapConverter = CraftableObject.ConditionMapConverter(perks)
+            val requirementMapConverter = CraftableObject.RequirementMapConverter(perks)
 
             val wikiWeapons = readList<WikiWeapon>(
                 File(wikiDirectory, "weapons.json"),
@@ -81,7 +81,7 @@ data class GameDatabase(
                     formIDConverter,
                     objectModifierConverter,
                     componentMapConverter,
-                    conditionMapConverter
+                    requirementMapConverter
                 )
             )
 
@@ -306,7 +306,7 @@ data class ObjectModifier(
     @LooseMod.Converter.Annotation
     val looseMod: LooseMod? = null,
     @Weapon.Converter.Annotation
-    val weapon: Weapon? = null, // TODO rename to "weaponKeyword"
+    val weapon: Weapon? = null,
     val effects: List<Effect>
 ) {
     data class Effect(
@@ -341,7 +341,7 @@ data class ObjectModifier(
  * @property editorID the editor ID of the recipe
  * @property createdMod the editor ID of the [ObjectModifier] that is created by this recipe
  * @property components the components required to use this recipe
- * @property conditions the requirements (e.g. perks) to use this recipe
+ * @property requirements the requirements (e.g. perks) to use this recipe
  */
 data class CraftableObject(
     @ESM.Converter.Annotation
@@ -353,8 +353,8 @@ data class CraftableObject(
     val createdMod: ObjectModifier? = null,
     @ComponentMapConverter.Annotation
     val components: Map<Component, Int>,
-    @ConditionMapConverter.Annotation
-    val conditions: Map<Perk, Int> // TODO rename to "requirements"
+    @RequirementMapConverter.Annotation
+    val requirements: Map<Perk, Int>
 ) {
     class ComponentMapConverter(val components: List<Component>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Map::class.java
@@ -380,7 +380,7 @@ data class CraftableObject(
         annotation class Annotation
     }
 
-    class ConditionMapConverter(val perks: List<Perk>) : FieldConverter(Annotation::class) {
+    class RequirementMapConverter(val perks: List<Perk>) : FieldConverter(Annotation::class) {
         override fun canConvert(cls: Class<*>) = cls == Map::class.java
 
         override fun fromJson(jv: JsonValue): Map<Perk, Int> {
