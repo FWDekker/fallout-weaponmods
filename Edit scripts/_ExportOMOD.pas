@@ -35,6 +35,12 @@ begin
         exit;
     end;
 
+    // The following implicitly excludes most legendary mods.
+    if (Length(GetEditValue(ElementByIndex(ElementBySignature(e, 'MNAM'), 0))) = 0) then
+    begin
+        exit;
+    end;
+
 
 
     // Init
